@@ -11,6 +11,7 @@ import com.hoangtien2k3.shopappbackend.services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,10 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
@@ -111,6 +109,24 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/images/{image-name}")
+    public ResponseEntity<?> viewImage(@PathVariable("image-name") String imageName) {
+        try {
+            Path imagePath = Paths.get("uploads/" + imageName);
+            UrlResource urlResource = new UrlResource(imagePath.toUri());
+
+            if (urlResource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(urlResource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     private String storeFile(MultipartFile file) throws IOException {
         if (!isImageFile(file) || file.getOriginalFilename() == null) {
             throw new IOException("Invalid image file");
@@ -118,7 +134,7 @@ public class ProductController {
 
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         // thêm UUID vào trước tên file để đảm bảo tên file là duy nhất
-        String uniqueFilename = UUID.randomUUID().toString() + "_" + fileName;
+        String uniqueFilename = UUID.randomUUID() + "_" + fileName;
         // đường dẫn đến thư mục mà bạn muốn lưu file
         Path uploadDir = Paths.get("uploads");
         // kiểm tra và tạo thư mục nêú nó không tồn tại
@@ -141,21 +157,28 @@ public class ProductController {
 
     @GetMapping("")
     public ResponseEntity<ProductListResponse> getProduct(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0", name = "category_id") Long categoryId,
             @RequestParam(defaultValue = "0", name = "page") int page,
             @RequestParam(defaultValue = "10", name = "limit") int limit
     ) {
         // tạo Pageable từ thông tin trang và giới hạn
-        PageRequest pageRequest = PageRequest.of(page, limit,
-                Sort.by("createdAt").descending());
-        Page<ProductResponse> productPage = productService.getAllProducts(pageRequest);
+        PageRequest pageRequest = PageRequest.of(
+                page,
+                limit,
+                Sort.by("id").ascending()
+        );
+        Page<ProductResponse> productPage = productService.getAllProducts(keyword, categoryId, pageRequest);
 
-        // lấy tổng số trang
-        int totalPages = productPage.getTotalPages();
         List<ProductResponse> products = productPage.getContent();
 
         return ResponseEntity.ok(ProductListResponse.builder()
                 .products(products)
-                .totalPages(totalPages)
+                .pageNumber(page)
+                .totalElements(productPage.getTotalElements())
+                .pageSize(productPage.getSize())
+                .isLast(productPage.isLast())
+                .totalPages(productPage.getTotalPages())
                 .build());
     }
 
@@ -168,6 +191,21 @@ public class ProductController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/by-ids")
+    public ResponseEntity<?> getProductsByIds(@RequestParam("ids") String ids) {
+        try {
+            // tách ids thành mảng các số nguyên
+            List<Long> productIds = Arrays.stream(ids.split(", "))
+                    .map(Long::parseLong)
+                    .toList();
+            List<Product> products = productService.findProductsByIds(productIds);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct(@PathVariable("id") Long id,
@@ -193,26 +231,26 @@ public class ProductController {
 
     // fack dữ liệu
 //    @PostMapping("/generate-faceker-products")
-    public ResponseEntity<?> generateFacekerProducts() {
-        Faker faker = new Faker();
-        for(int i = 0; i < 10000; i++) {
-            String productName = faker.commerce().productName();
-            if (productService.existsProduct(productName)) {
-                continue;
-            }
-            ProductDTO productDTO = ProductDTO.builder()
-                    .name(productName)
-                    .price((float) faker.number().numberBetween(10, 90000000))
-                    .description(faker.lorem().sentence())
-                    .categoryId((long) faker.number().numberBetween(2, 7))
-                    .build();
-            try {
-                productService.createProduct(productDTO);
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().body(e.getMessage());
-            }
-        }
-        return ResponseEntity.ok("Fake product generated successfully");
-    }
+//    public ResponseEntity<?> generateFacekerProducts() {
+//        Faker faker = new Faker();
+//        for(int i = 0; i < 10000; i++) {
+//            String productName = faker.commerce().productName();
+//            if (productService.existsProduct(productName)) {
+//                continue;
+//            }
+//            ProductDTO productDTO = ProductDTO.builder()
+//                    .name(productName)
+//                    .price((float) faker.number().numberBetween(10, 90000000))
+//                    .description(faker.lorem().sentence())
+//                    .categoryId((long) faker.number().numberBetween(2, 7))
+//                    .build();
+//            try {
+//                productService.createProduct(productDTO);
+//            } catch (Exception e) {
+//                return ResponseEntity.badRequest().body(e.getMessage());
+//            }
+//        }
+//        return ResponseEntity.ok("Fake product generated successfully");
+//    }
 
 }

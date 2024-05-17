@@ -13,11 +13,15 @@ import com.hoangtien2k3.shopappbackend.repositories.ProductImageRepository;
 import com.hoangtien2k3.shopappbackend.repositories.ProductRepository;
 import com.hoangtien2k3.shopappbackend.responses.product.ProductResponse;
 import com.hoangtien2k3.shopappbackend.services.ProductService;
+import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
+import com.hoangtien2k3.shopappbackend.utils.MessagKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,41 +32,53 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
     private final ProductMapper productMapper;
+    private final LocalizationUtils localizationUtils;
 
     @Override
+    @Transactional
     public Product createProduct(ProductDTO productDTO) throws DataNotFoundException {
         Category existsCategory = categoryRepository
                 .findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new DataNotFoundException("Category not found with id: " + productDTO.getCategoryId()));
-
+                .orElseThrow(() ->
+                        new DataNotFoundException(
+                                localizationUtils.getLocalizedMessage(
+                                        MessagKeys.CATEGORY_NOT_FOUND, productDTO.getCategoryId())
+                        )
+                );
         Product savedProduct = productMapper.toProduct(productDTO);
         savedProduct.setCategory(existsCategory);
         return productRepository.save(savedProduct);
     }
 
     @Override
-    public Product getProductById(Long productId) throws Exception {
+    public Product getProductById(Long productId) throws DataNotFoundException {
         return productRepository
                 .findById(productId)
-                .orElseThrow(() -> new DataNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessagKeys.PRODUCT_NOT_FOUND, productId)));
     }
 
     @Override
-    public Page<ProductResponse> getAllProducts(PageRequest pageable) {
+    public Page<ProductResponse> getAllProducts(String keyword,
+                                                Long categoryId,
+                                                PageRequest pageRequest) {
         // lấy danh sách sản phẩm theo trang(page) và giới hạn(limit)
-        return productRepository
-                .findAll(pageable)
-                .map(ProductResponse::fromProduct);
+        Page<Product> productPage;
+        productPage = productRepository.searchProducts(keyword, categoryId, pageRequest);
+        return productPage.map(ProductResponse::fromProduct);
     }
 
     @Override
-    public Product updateProduct(Long id, ProductDTO productDTO) throws Exception {
+    @Transactional
+    public Product updateProduct(Long id, ProductDTO productDTO) throws DataNotFoundException {
         Product existsProduct = getProductById(id);
         if (existsProduct != null) {
             // copy các thuộc tính từ DTO -> Product
             Category existsCategory = categoryRepository
                     .findById(productDTO.getCategoryId())
-                    .orElseThrow(() -> new DataNotFoundException("Category not found with id: " + productDTO.getCategoryId()));
+                    .orElseThrow(() -> new DataNotFoundException(
+                            localizationUtils.getLocalizedMessage(
+                                    MessagKeys.CATEGORY_NOT_FOUND, productDTO.getCategoryId())
+                    ));
 
             existsProduct.setName(productDTO.getName());
             existsProduct.setCategory(existsCategory);
@@ -76,6 +92,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public void deleteProduct(Long id) {
         // tìm ra product
         Optional<Product> optionalProduct = productRepository.findById(id);
@@ -89,10 +106,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductImage createProductImage(Long productId,
-                                            ProductImageDTO productImageDTO) {
+                                           ProductImageDTO productImageDTO) {
         Product existsProduct = productRepository
                 .findById(productId)
-                .orElseThrow(() -> new DataNotFoundException("Product not found with id: " + productImageDTO.getProductId()));
+                .orElseThrow(() -> new DataNotFoundException(
+                        localizationUtils.getLocalizedMessage(
+                                MessagKeys.CATEGORY_NOT_FOUND, productId))
+                );
 
         ProductImage productImage = ProductImage.builder()
                 .product(existsProduct)
@@ -107,6 +127,20 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return productImageRepository.save(productImage);
+    }
+
+//    @Override
+//    public Product getProductById(long productId) throws DataNotFoundException {
+//        Optional<Product> optionalProduct = productRepository.getDetailProducts(productId);
+//        if (optionalProduct.isPresent()) {
+//            return optionalProduct.get();
+//        }
+//        throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessagKeys.PRODUCT_NOT_FOUND, productId));
+//    }
+
+    @Override
+    public List<Product> findProductsByIds(List<Long> productIds) {
+        return productRepository.findProductByIds(productIds);
     }
 
 }

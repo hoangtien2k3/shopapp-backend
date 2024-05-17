@@ -48,7 +48,7 @@ public class OrderResponse extends BaseResponse {
     @Column(name = "shipping_address")
     private String shippingAddress;
 
-    @Column(name = "shipping_date") // ngày giao hàng
+    @Column(name = "shipping_date")
     private String shippingDate;
 
     @Column(name = "tracking_number")

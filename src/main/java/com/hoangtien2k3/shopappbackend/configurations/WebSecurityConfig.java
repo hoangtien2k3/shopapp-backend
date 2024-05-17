@@ -48,6 +48,10 @@ public class WebSecurityConfig {
 
                         // Pre-authorization products
                         .requestMatchers(HttpMethod.GET,
+                                String.format("%s/products/images/*", apiPrefix)).permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                String.format("%s/products**", apiPrefix)).permitAll()
+                        .requestMatchers(HttpMethod.GET,
                                 String.format("%s/products?**", apiPrefix)).hasAnyRole(RoleType.USER, RoleType.ADMIN)
                         .requestMatchers(HttpMethod.POST,
                                 String.format("%s/products/**", apiPrefix)).hasRole(RoleType.ADMIN)
@@ -55,6 +59,7 @@ public class WebSecurityConfig {
                                 String.format("%s/products/**", apiPrefix)).hasRole(RoleType.ADMIN)
                         .requestMatchers(HttpMethod.DELETE,
                                 String.format("%s/products/**", apiPrefix)).hasRole(RoleType.ADMIN)
+
 
                         // Pre-authorization orders
                         .requestMatchers(HttpMethod.POST,

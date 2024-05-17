@@ -20,6 +20,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -36,17 +37,20 @@ public class UserServiceImpl implements UserService {
     private final LocalizationUtils localizationUtils;
 
     @Override
+    @Transactional
     public User createUser(UserDTO userDTO) throws Exception {
         // register new user
         String phoneNumber = userDTO.getPhoneNumber();
         // kiểm tra xem số điện thoại đã tồn tại hay chưa
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new DataIntegrityViolationException(MessagKeys.PHONE_NUMBER_EXISTED);
+            throw new DataIntegrityViolationException(
+                    localizationUtils.getLocalizedMessage(MessagKeys.PHONE_NUMBER_EXISTED));
         }
         Role role = roleRepository.findById(userDTO.getRoleId()).
                 orElseThrow(() -> new DataNotFoundException("Role not found"));
         if (role.getName().equalsIgnoreCase(RoleType.ADMIN)) {
-            throw new PermissionDenyException(MessagKeys.CAN_NOT_CREATE_ACCOUNT_ROLE_ADMIN);
+            throw new PermissionDenyException(
+                    localizationUtils.getLocalizedMessage(MessagKeys.CAN_NOT_CREATE_ACCOUNT_ROLE_ADMIN));
         }
 
         // convert userDTO -> user

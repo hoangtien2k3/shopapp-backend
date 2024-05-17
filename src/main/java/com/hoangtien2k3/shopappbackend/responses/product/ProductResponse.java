@@ -2,8 +2,12 @@ package com.hoangtien2k3.shopappbackend.responses.product;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hoangtien2k3.shopappbackend.models.Product;
+import com.hoangtien2k3.shopappbackend.models.ProductImage;
 import com.hoangtien2k3.shopappbackend.responses.BaseResponse;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,6 +19,10 @@ public class ProductResponse extends BaseResponse {
     private Float price;
     private String thumbnail;
     private String description;
+
+    @JsonProperty("product_images")
+    private List<ProductImage> productImages = new ArrayList<>();
+
     @JsonProperty("category_id")
     private Long categoryId;
 

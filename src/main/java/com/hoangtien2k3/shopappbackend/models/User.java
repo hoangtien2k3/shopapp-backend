@@ -1,5 +1,6 @@
 package com.hoangtien2k3.shopappbackend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -32,6 +33,7 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "address", length = 200)
     private String address;
 
+    @JsonIgnore
     @Column(name = "password", length = 100, nullable = false)
     private String password;
 

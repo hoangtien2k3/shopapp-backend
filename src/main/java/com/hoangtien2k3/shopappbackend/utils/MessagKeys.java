@@ -18,7 +18,8 @@ public class MessagKeys {
     public static final String PASSWORD_REQUIRED="password.required";
     public static final String RETYPE_PASSWORD_REQUIRED="retype_password.required";
 
-
+    public static final String PRODUCT_NOT_FOUND="product.valid.not_found";
+    public static final String CATEGORY_NOT_FOUND="category.valid.not_found";
 
 
 }
