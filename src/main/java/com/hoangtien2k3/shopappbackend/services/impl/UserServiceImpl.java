@@ -10,6 +10,8 @@ import com.hoangtien2k3.shopappbackend.models.User;
 import com.hoangtien2k3.shopappbackend.repositories.RoleRepository;
 import com.hoangtien2k3.shopappbackend.repositories.UserRepository;
 import com.hoangtien2k3.shopappbackend.services.UserService;
+import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
+import com.hoangtien2k3.shopappbackend.utils.MessagKeys;
 import com.hoangtien2k3.shopappbackend.utils.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final LocalizationUtils localizationUtils;
 
     @Override
     public User createUser(UserDTO userDTO) throws Exception {
@@ -38,12 +41,12 @@ public class UserServiceImpl implements UserService {
         String phoneNumber = userDTO.getPhoneNumber();
         // kiểm tra xem số điện thoại đã tồn tại hay chưa
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new DataIntegrityViolationException("Phone number already exists");
+            throw new DataIntegrityViolationException(MessagKeys.PHONE_NUMBER_EXISTED);
         }
         Role role = roleRepository.findById(userDTO.getRoleId()).
                 orElseThrow(() -> new DataNotFoundException("Role not found"));
-        if (role.getName().toUpperCase().equals(RoleType.ADMIN)) {
-            throw new PermissionDenyException("You can't register an account with role: " + role.getName().toUpperCase());
+        if (role.getName().equalsIgnoreCase(RoleType.ADMIN)) {
+            throw new PermissionDenyException(MessagKeys.CAN_NOT_CREATE_ACCOUNT_ROLE_ADMIN);
         }
 
         // convert userDTO -> user
@@ -65,18 +68,19 @@ public class UserServiceImpl implements UserService {
         // exists by user
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
         if (optionalUser.isEmpty()) {
-            throw new DataNotFoundException("Wrong phone number or password");
+            throw new DataNotFoundException(
+                    localizationUtils.getLocalizedMessage(MessagKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
+            );
         }
-
-        // get user
         User user = optionalUser.get();
         // check password
         if (user.getFacebookAccountId() == 0 && user.getGoogleAccountId() == 0) {
             if (!passwordEncoder.matches(password, user.getPassword())) {
-                throw new BadCredentialsException("Wrong phone number or password");
+                throw new BadCredentialsException(
+                        localizationUtils.getLocalizedMessage(MessagKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
+                );
             }
         }
-
         // authenticated with java spring security
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -85,7 +89,6 @@ public class UserServiceImpl implements UserService {
                         user.getAuthorities()
                 )
         );
-
         return jwtTokenUtil.generateToken(user);
     }
 }

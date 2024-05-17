@@ -51,26 +51,6 @@ public class JwtTokenUtil {
         }
     }
 
-//    public String generateToken(User user) {
-//        // properties => claims
-//        Map<String, Object> claims = new HashMap<>();
-//        claims.put("phoneNumber", user.getPhoneNumber());
-//
-//        try {
-//            String token = Jwts.builder()
-//                    .setClaims(claims)
-//                    .setSubject(user.getPhoneNumber())
-//                    .setIssuedAt(new Date(System.currentTimeMillis()))
-//                    .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
-//                    .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-//                    .compact();
-//            return token;
-//        } catch (Exception e ){
-//            log.info("ERROR_JWT_TOKEN_GENERATION", "Can not generate jwt token, error: " + e.getMessage());
-//            return null;
-//        }
-//    }
-
     // decode and get the key
     private Key getSignInKey() {
         // decode SECRET_KEY

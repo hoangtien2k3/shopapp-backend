@@ -1,7 +1,6 @@
 package com.hoangtien2k3.shopappbackend.configurations;
 
 import com.hoangtien2k3.shopappbackend.filters.JwtTokenFilter;
-import com.hoangtien2k3.shopappbackend.models.Role;
 import com.hoangtien2k3.shopappbackend.utils.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

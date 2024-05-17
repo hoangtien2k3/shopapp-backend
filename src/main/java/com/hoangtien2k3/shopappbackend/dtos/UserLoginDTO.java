@@ -11,9 +11,9 @@ import lombok.*;
 @NoArgsConstructor
 public class UserLoginDTO {
     @JsonProperty("phone_number")
-    @NotBlank(message = "Phone number is required")
+    @NotBlank(message = "{phone_number.required}")
     private String phoneNumber;
 
-    @NotBlank(message = "Password can't be blank")
+    @NotBlank(message = "{password.required}")
     private String password;
 }

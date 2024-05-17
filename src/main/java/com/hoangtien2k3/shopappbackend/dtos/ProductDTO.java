@@ -14,12 +14,12 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductDTO {
-    @NotBlank(message = "Title is required")
-    @Size(min = 3, max = 200, message = "Title mut be between 3 and 200 characters")
+    @NotBlank(message = "{product_title_required}")
+    @Size(min = 3, max = 200, message = "{product_title_size_required}")
     private String name;
 
-    @Min(value = 0, message = "Price must be greater than to equal to 0")
-    @Max(value = 10000000, message = "Price must be less than or equal to 10,000,000")
+    @Min(value = 0, message = "{product_price_min_required}")
+    @Max(value = 100000000, message = "{product_price_max_required}")
     private Float price;
 
     private String thumbnail;

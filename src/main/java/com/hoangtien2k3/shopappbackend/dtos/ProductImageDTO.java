@@ -13,10 +13,10 @@ import lombok.*;
 @NoArgsConstructor
 public class ProductImageDTO {
     @JsonProperty("product_id")
-    @Min(value = 1, message = "Product's ID must be > 0")
+    @Min(value = 1, message = "{product_id_required}")
     private Long productId;
 
-    @Size(min = 5, max = 300, message = "Image's name")
+    @Size(min = 5, max = 300, message = "{image_size_required}")
     @JsonProperty("image_url")
     private String imageUrl;
 }

@@ -15,8 +15,8 @@ import java.util.Date;
 @Getter
 @Setter
 public class OrderDTO {
+    @Min(value = 1, message = "{user_id_required}")
     @JsonProperty("user_id")
-    @Min(value = 1, message = "User's ID must be bested than 0")
     private Long userId;
 
     @JsonProperty("fullname")
@@ -24,16 +24,16 @@ public class OrderDTO {
 
     private String email;
 
+    @NotBlank(message = "{phone_number.required}")
+    @Size(min = 5, message = "{phone_number_size.required}")
     @JsonProperty("phone_number")
-    @NotBlank(message = "Phone Number is required")
-    @Size(min = 5, message = "Phone number must be at least 5 characters")
     private String phoneNumber;
 
     private String address;
     private String note;
 
     @JsonProperty("total_money")
-    @Min(value = 0, message = "Total money must be >= 0")
+    @Min(value = 0, message = "{total_money.required}")
     private Float totalMoney;
 
     @JsonProperty("shipping_method")
