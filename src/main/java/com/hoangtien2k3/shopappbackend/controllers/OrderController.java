@@ -25,6 +25,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("")
     public ResponseEntity<?> createOrder(@RequestBody @Valid OrderDTO orderDTO,
                                          BindingResult bindingResult) {
@@ -47,6 +48,7 @@ public class OrderController {
     /**
      * Lấy ra danh sách đơn hàng theo user_id
      **/
+    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/user/{user_id}")
     public ResponseEntity<?> getOrders(@Valid @PathVariable("user_id") Long userId) {
         try {
@@ -62,6 +64,7 @@ public class OrderController {
     /*
     lẩy ra chi tiết đơn hàng theo order_id
     */
+    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrder(@Valid @PathVariable("id") Long orderId) {
         try {
@@ -101,6 +104,7 @@ public class OrderController {
                 .build());
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateOrder(
             @Valid @PathVariable long id,
@@ -114,6 +118,7 @@ public class OrderController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrder(@Valid @PathVariable long id) {
         // xoá mềm => cập nhật trường active false

@@ -51,6 +51,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                 return;
             }
+
             token = authHeader.substring(7);
             phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
 
@@ -70,11 +71,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (Exception e) {
-            log.info("SC_UNAUTHORIZED", e.getMessage());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
         }
     }
 
+    // isByPass: không yêu cầu token
     private boolean isByPassToken(@NotNull HttpServletRequest request) {
         final List<Pair<String, String>> bypassTokens = Arrays.asList(
                 Pair.of(String.format("%s/roles", apiPrefix), "GET"),
@@ -86,7 +87,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         String requestPath = request.getServletPath();
         String requestMethod = request.getMethod();
-
         // check ở method get của order
         if (requestPath.equals(String.format("%s/orders", apiPrefix))
                 && requestMethod.equals("GET")) {

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +39,7 @@ public class ProductController {
 
     private final ProductService productService;
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("")
     public ResponseEntity<?> createProduct(
             @Valid @RequestBody ProductDTO productDTO,
@@ -58,6 +60,7 @@ public class ProductController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(
             value = "/uploads/{id}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
@@ -110,6 +113,7 @@ public class ProductController {
         }
     }
 
+//    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/images/{image-name}")
     public ResponseEntity<?> viewImage(@PathVariable("image-name") String imageName) {
         try {
@@ -158,6 +162,7 @@ public class ProductController {
         return contentType != null && contentType.startsWith("image/");
     }
 
+//    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("")
     public ResponseEntity<ProductListResponse> getProduct(
             @RequestParam(defaultValue = "") String keyword,
@@ -185,6 +190,8 @@ public class ProductController {
                 .build());
     }
 
+
+//    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable("id") Long id) {
         try {
@@ -195,6 +202,7 @@ public class ProductController {
         }
     }
 
+//    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/details")
     public ResponseEntity<?> getProductDetailsById(@RequestParam("id") Long id) {
         try {
@@ -205,6 +213,7 @@ public class ProductController {
         }
     }
 
+//    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/by-ids")
     public ResponseEntity<?> getProductsByIds(@RequestParam("ids") String ids) {
         try {
@@ -220,6 +229,7 @@ public class ProductController {
     }
 
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct(@PathVariable("id") Long id,
                                            @RequestBody ProductDTO productDTO
@@ -232,6 +242,7 @@ public class ProductController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProductById(@PathVariable("id") Long id) {
         try {
@@ -243,27 +254,28 @@ public class ProductController {
     }
 
     // fack dữ liệu
-//    @PostMapping("/generate-faceker-products")
-//    public ResponseEntity<?> generateFacekerProducts() {
-//        Faker faker = new Faker();
-//        for(int i = 0; i < 10000; i++) {
-//            String productName = faker.commerce().productName();
-//            if (productService.existsProduct(productName)) {
-//                continue;
-//            }
-//            ProductDTO productDTO = ProductDTO.builder()
-//                    .name(productName)
-//                    .price((float) faker.number().numberBetween(10, 90000000))
-//                    .description(faker.lorem().sentence())
-//                    .categoryId((long) faker.number().numberBetween(2, 7))
-//                    .build();
-//            try {
-//                productService.createProduct(productDTO);
-//            } catch (Exception e) {
-//                return ResponseEntity.badRequest().body(e.getMessage());
-//            }
-//        }
-//        return ResponseEntity.ok("Fake product generated successfully");
-//    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/generate-faceker-products")
+    public ResponseEntity<?> generateFacekerProducts() {
+        Faker faker = new Faker();
+        for(int i = 0; i < 10000; i++) {
+            String productName = faker.commerce().productName();
+            if (productService.existsProduct(productName)) {
+                continue;
+            }
+            ProductDTO productDTO = ProductDTO.builder()
+                    .name(productName)
+                    .price((float) faker.number().numberBetween(10, 90000000))
+                    .description(faker.lorem().sentence())
+                    .categoryId((long) faker.number().numberBetween(2, 7))
+                    .build();
+            try {
+                productService.createProduct(productDTO);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+        return ResponseEntity.ok("Fake product generated successfully");
+    }
 
 }

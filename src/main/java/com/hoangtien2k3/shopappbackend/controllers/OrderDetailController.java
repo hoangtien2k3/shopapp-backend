@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,7 @@ public class OrderDetailController {
 
     private final OrderDetailService orderDetailService;
 
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("")
     public ResponseEntity<?> createOrderDetail(
             @Valid @RequestBody OrderDetailDTO orderDetailDTO,
@@ -41,6 +43,7 @@ public class OrderDetailController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderDetail(@Valid @PathVariable("id") Long id) throws Exception {
         OrderDetail orderDetail = orderDetailService.getOrderDetail(id);
@@ -48,6 +51,7 @@ public class OrderDetailController {
         // return ResponseEntity.ok(OrderDetailResponse.fromOrderDetail(orderDetail));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/order/{orderId}")
     public ResponseEntity<?> getOrderDetails(@Valid @PathVariable("orderId") Long orderId) {
         List<OrderDetailResponse> orderDetailResponses = orderDetailService.findByOrderId(orderId)
@@ -57,6 +61,7 @@ public class OrderDetailController {
         return ResponseEntity.ok(orderDetailResponses);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateOrderDetail(
             @Valid @RequestBody OrderDetailDTO orderDetailDTO,
@@ -70,6 +75,7 @@ public class OrderDetailController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrderDetail(@Valid @PathVariable("id") Long id) {
         try {
