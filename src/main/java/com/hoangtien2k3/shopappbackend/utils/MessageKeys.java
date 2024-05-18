@@ -1,6 +1,6 @@
 package com.hoangtien2k3.shopappbackend.utils;
 
-public class MessagKeys {
+public class MessageKeys {
     // login
     public static final String LOGIN_SUCCESS = "user.login.login_succesfully";
     public static final String LOGIN_FAILED = "user.login.login_failed";

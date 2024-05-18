@@ -11,7 +11,7 @@ import com.hoangtien2k3.shopappbackend.repositories.RoleRepository;
 import com.hoangtien2k3.shopappbackend.repositories.UserRepository;
 import com.hoangtien2k3.shopappbackend.services.UserService;
 import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
-import com.hoangtien2k3.shopappbackend.utils.MessagKeys;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import com.hoangtien2k3.shopappbackend.utils.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,13 +44,13 @@ public class UserServiceImpl implements UserService {
         // kiểm tra xem số điện thoại đã tồn tại hay chưa
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
             throw new DataIntegrityViolationException(
-                    localizationUtils.getLocalizedMessage(MessagKeys.PHONE_NUMBER_EXISTED));
+                    localizationUtils.getLocalizedMessage(MessageKeys.PHONE_NUMBER_EXISTED));
         }
         Role role = roleRepository.findById(userDTO.getRoleId()).
                 orElseThrow(() -> new DataNotFoundException("Role not found"));
         if (role.getName().equalsIgnoreCase(RoleType.ADMIN)) {
             throw new PermissionDenyException(
-                    localizationUtils.getLocalizedMessage(MessagKeys.CAN_NOT_CREATE_ACCOUNT_ROLE_ADMIN));
+                    localizationUtils.getLocalizedMessage(MessageKeys.CAN_NOT_CREATE_ACCOUNT_ROLE_ADMIN));
         }
 
         // convert userDTO -> user
@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
         if (optionalUser.isEmpty()) {
             throw new DataNotFoundException(
-                    localizationUtils.getLocalizedMessage(MessagKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
+                    localizationUtils.getLocalizedMessage(MessageKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
             );
         }
         User user = optionalUser.get();
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
         if (user.getFacebookAccountId() == 0 && user.getGoogleAccountId() == 0) {
             if (!passwordEncoder.matches(password, user.getPassword())) {
                 throw new BadCredentialsException(
-                        localizationUtils.getLocalizedMessage(MessagKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
+                        localizationUtils.getLocalizedMessage(MessageKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
                 );
             }
         }
@@ -94,5 +94,73 @@ public class UserServiceImpl implements UserService {
                 )
         );
         return jwtTokenUtil.generateToken(user);
+    }
+
+    @Override
+    public User getUserDetailsFromToken(String token) throws Exception {
+        if (jwtTokenUtil.isTokenExpirated(token)) {
+            throw new Exception("Token is expired");
+        }
+
+        String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
+        Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
+
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
+        } else {
+            throw new DataNotFoundException("User not found");
+        }
+    }
+
+
+    @Override
+    @Transactional
+    public User updateUser(Long userId, UserDTO userDTO) throws Exception {
+        // find the exists user by userid
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
+
+        String phoneNumber = userDTO.getPhoneNumber();
+        if (!existingUser.getPhoneNumber().equals(phoneNumber)) {
+            throw new DataIntegrityViolationException("Phone number does not match");
+        }
+
+        Role updateRole = roleRepository.findById(userDTO.getRoleId())
+                .orElseThrow(() -> new DataNotFoundException("Role not found"));
+
+        if (updateRole.getName().equalsIgnoreCase(RoleType.ADMIN)) {
+            throw new PermissionDenyException("Admin role cannot be updated");
+        }
+
+        // Update user info
+
+
+        if (userDTO.getFullName() != null) {
+            existingUser.setFullName(userDTO.getFullName());
+        }
+        if (userDTO.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(userDTO.getPhoneNumber());
+        }
+        if (userDTO.getAddress() != null) {
+            existingUser.setAddress(userDTO.getAddress());
+        }
+        if (userDTO.getDateOfBirth() != null) {
+            existingUser.setDateOfBirth(userDTO.getDateOfBirth());
+        }
+        if (userDTO.getFacebookAccountId() > 0) {
+            existingUser.setFacebookAccountId(userDTO.getFacebookAccountId());
+        }
+        if (userDTO.getGoogleAccountId() > 0) {
+            existingUser.setGoogleAccountId(userDTO.getGoogleAccountId());
+        }
+//        existingUser.setRole(updateRole); // user khoong update được role
+
+        // update the password
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            String newPassword = passwordEncoder.encode(userDTO.getPassword());
+            existingUser.setPassword(newPassword);
+        }
+
+        return userRepository.save(existingUser);
     }
 }

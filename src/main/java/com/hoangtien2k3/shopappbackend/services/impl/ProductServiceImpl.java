@@ -14,7 +14,7 @@ import com.hoangtien2k3.shopappbackend.repositories.ProductRepository;
 import com.hoangtien2k3.shopappbackend.responses.product.ProductResponse;
 import com.hoangtien2k3.shopappbackend.services.ProductService;
 import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
-import com.hoangtien2k3.shopappbackend.utils.MessagKeys;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,7 +42,7 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() ->
                         new DataNotFoundException(
                                 localizationUtils.getLocalizedMessage(
-                                        MessagKeys.CATEGORY_NOT_FOUND, productDTO.getCategoryId())
+                                        MessageKeys.CATEGORY_NOT_FOUND, productDTO.getCategoryId())
                         )
                 );
         Product savedProduct = productMapper.toProduct(productDTO);
@@ -54,7 +54,7 @@ public class ProductServiceImpl implements ProductService {
     public Product getProductById(Long productId) throws DataNotFoundException {
         return productRepository
                 .findById(productId)
-                .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessagKeys.PRODUCT_NOT_FOUND, productId)));
+                .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.PRODUCT_NOT_FOUND, productId)));
     }
 
     @Override
@@ -77,7 +77,7 @@ public class ProductServiceImpl implements ProductService {
                     .findById(productDTO.getCategoryId())
                     .orElseThrow(() -> new DataNotFoundException(
                             localizationUtils.getLocalizedMessage(
-                                    MessagKeys.CATEGORY_NOT_FOUND, productDTO.getCategoryId())
+                                    MessageKeys.CATEGORY_NOT_FOUND, productDTO.getCategoryId())
                     ));
 
             existsProduct.setName(productDTO.getName());
@@ -111,7 +111,7 @@ public class ProductServiceImpl implements ProductService {
                 .findById(productId)
                 .orElseThrow(() -> new DataNotFoundException(
                         localizationUtils.getLocalizedMessage(
-                                MessagKeys.CATEGORY_NOT_FOUND, productId))
+                                MessageKeys.CATEGORY_NOT_FOUND, productId))
                 );
 
         ProductImage productImage = ProductImage.builder()
@@ -129,14 +129,14 @@ public class ProductServiceImpl implements ProductService {
         return productImageRepository.save(productImage);
     }
 
-//    @Override
-//    public Product getProductById(long productId) throws DataNotFoundException {
-//        Optional<Product> optionalProduct = productRepository.getDetailProducts(productId);
-//        if (optionalProduct.isPresent()) {
-//            return optionalProduct.get();
-//        }
-//        throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessagKeys.PRODUCT_NOT_FOUND, productId));
-//    }
+    @Override
+    public Product getDetailProducts(long productId) throws DataNotFoundException {
+        Optional<Product> optionalProduct = productRepository.getDetailProducts(productId);
+        if (optionalProduct.isPresent()) {
+            return optionalProduct.get();
+        }
+        throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.PRODUCT_NOT_FOUND, productId));
+    }
 
     @Override
     public List<Product> findProductsByIds(List<Long> productIds) {

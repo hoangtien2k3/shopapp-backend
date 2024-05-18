@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -48,7 +49,8 @@ public class OrderController {
         try {
             // lấy ra danh sách đơn hàng của userId
             List<Order> orders = orderService.findByUserId(userId);
-            return ResponseEntity.ok(orders);
+            List<OrderResponse> orderResponses = OrderResponse.fromOrdersList(orders);
+            return ResponseEntity.ok(orderResponses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -61,7 +63,8 @@ public class OrderController {
     public ResponseEntity<?> getOrder(@Valid @PathVariable("id") Long orderId) {
         try {
             Order existsOrder = orderService.getOrderById(orderId);
-            return ResponseEntity.ok(existsOrder);
+            OrderResponse orderResponse = OrderResponse.fromOrder(existsOrder);
+            return ResponseEntity.ok(orderResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

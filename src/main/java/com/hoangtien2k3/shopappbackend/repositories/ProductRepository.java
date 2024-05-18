@@ -24,9 +24,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                  Pageable pageable
     );
 
-//    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.productImages where p.id = :productId")
-//    Optional<Product> getDetailProducts(@Param("productId") Long productId);
-
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.productImages where p.id = :productId")
+    Optional<Product> getDetailProducts(@Param("productId") Long productId);
 
     @Query("SELECT p FROM Product p where p.id IN :productIds")
     List<Product> findProductByIds(@Param("productIds") List<Long> productIds);

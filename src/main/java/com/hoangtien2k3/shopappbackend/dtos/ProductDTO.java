@@ -1,6 +1,7 @@
 package com.hoangtien2k3.shopappbackend.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hoangtien2k3.shopappbackend.models.ProductImage;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

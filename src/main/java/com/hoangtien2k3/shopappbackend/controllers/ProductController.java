@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
@@ -120,7 +121,9 @@ public class ProductController {
                         .contentType(MediaType.IMAGE_JPEG)
                         .body(urlResource);
             } else {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(new UrlResource(Paths.get("uploads/notfound.jpg").toUri().toString()));
             }
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
@@ -192,13 +195,23 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/details")
+    public ResponseEntity<?> getProductDetailsById(@RequestParam("id") Long id) {
+        try {
+            Product existsProducts = productService.getDetailProducts(id);
+            return ResponseEntity.ok(existsProducts);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/by-ids")
     public ResponseEntity<?> getProductsByIds(@RequestParam("ids") String ids) {
         try {
             // tách ids thành mảng các số nguyên
-            List<Long> productIds = Arrays.stream(ids.split(", "))
+            List<Long> productIds = Arrays.stream(ids.split(","))
                     .map(Long::parseLong)
-                    .toList();
+                    .collect(Collectors.toList());
             List<Product> products = productService.findProductsByIds(productIds);
             return ResponseEntity.ok(products);
         } catch (Exception e) {

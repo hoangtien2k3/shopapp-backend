@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hoangtien2k3.shopappbackend.models.OrderDetail;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -38,6 +40,20 @@ public class OrderDetailResponse {
                 .totalMoney(orderDetail.getTotalMoney())
                 .color(orderDetail.getColor())
                 .build();
+    }
+
+    public static List<OrderDetailResponse> fromOrderDetailList(List<OrderDetail> orderDetailList) {
+        return orderDetailList.stream()
+                .map(orderDetail -> OrderDetailResponse.builder()
+                            .id(orderDetail.getId())
+                            .orderId(orderDetail.getOrder().getId())
+                            .productId(orderDetail.getProduct().getId())
+                            .price(orderDetail.getPrice())
+                            .numberOfProducts(orderDetail.getNumberOfProducts())
+                            .totalMoney(orderDetail.getTotalMoney())
+                            .color(orderDetail.getColor())
+                            .build()
+                ).toList();
     }
 
 }

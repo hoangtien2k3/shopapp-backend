@@ -1,19 +1,23 @@
 package com.hoangtien2k3.shopappbackend.services.impl;
 
+import com.hoangtien2k3.shopappbackend.dtos.CartItemDTO;
 import com.hoangtien2k3.shopappbackend.dtos.OrderDTO;
 import com.hoangtien2k3.shopappbackend.exceptions.DataNotFoundException;
-import com.hoangtien2k3.shopappbackend.models.Order;
-import com.hoangtien2k3.shopappbackend.models.OrderStatus;
-import com.hoangtien2k3.shopappbackend.models.User;
+import com.hoangtien2k3.shopappbackend.models.*;
+import com.hoangtien2k3.shopappbackend.repositories.OrderDetailRepository;
 import com.hoangtien2k3.shopappbackend.repositories.OrderRepository;
+import com.hoangtien2k3.shopappbackend.repositories.ProductRepository;
 import com.hoangtien2k3.shopappbackend.repositories.UserRepository;
 import com.hoangtien2k3.shopappbackend.services.OrderService;
+import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -22,8 +26,11 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final ProductRepository productRepository;
+    private LocalizationUtils localizationUtils;
 
     @Override
     @Transactional
@@ -51,19 +58,46 @@ public class OrderServiceImpl implements OrderService {
         if (shippingDate.isBefore(LocalDate.now())) {
             throw new DataNotFoundException("Date must be at lest today !");
         }
-
         order.setShippingDate(shippingDate); // set thời điểm giao hàng
         order.setActive(true); // trạng thái đơn hàng đã được active
+        order.setTotalMoney(orderDTO.getTotalMoney());
+        orderRepository.save(order); // lưu vào database
 
-        // lưu vào database
-        orderRepository.save(order);
+        // tạo danh sách các đối tượng orderDetails
+        List<OrderDetail> orderDetails = new ArrayList<>();
+        for(CartItemDTO cartItemDTO : orderDTO.getCartItems()) {
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setOrder(order);
+
+            // lấy thông tin sản phẩm từ cartItemDTO
+            Long productId = cartItemDTO.getProductId();
+            int quantity = cartItemDTO.getQuantity();
+
+            // tìm thông tin sản phẩm từ cơ sở dữ liệu
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new DataNotFoundException(
+                            localizationUtils.getLocalizedMessage(
+                                    MessageKeys.PRODUCT_NOT_FOUND, productId
+                            ))
+                    );
+
+            // Đặt thông tin cho orderDetails
+            orderDetail.setProduct(product);
+            orderDetail.setNumberOfProducts(quantity);
+            orderDetail.setPrice(product.getPrice());
+
+            // thêm orderDetails vào danh sách
+            orderDetails.add(orderDetail);
+        }
+
+        // Lưu danh sách OrderDetails vào cơ sở dữ liệu
+        orderDetailRepository.saveAll(orderDetails);
         return order;
     }
 
     @Override
     public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Order is not found with id: " + id));
+        return orderRepository.findById(id).orElse(null);
     }
 
     @Override

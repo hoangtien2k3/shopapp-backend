@@ -1,10 +1,12 @@
 package com.hoangtien2k3.shopappbackend.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -62,5 +64,9 @@ public class Order {
     private String paymentMethod;
 
     @Column(name = "active")
-    private boolean active;
+    private boolean active; // thuộc quyền admin
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<OrderDetail> orderDetails;
 }
