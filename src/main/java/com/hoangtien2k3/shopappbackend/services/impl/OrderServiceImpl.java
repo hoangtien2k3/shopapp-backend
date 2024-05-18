@@ -8,11 +8,15 @@ import com.hoangtien2k3.shopappbackend.repositories.OrderDetailRepository;
 import com.hoangtien2k3.shopappbackend.repositories.OrderRepository;
 import com.hoangtien2k3.shopappbackend.repositories.ProductRepository;
 import com.hoangtien2k3.shopappbackend.repositories.UserRepository;
+import com.hoangtien2k3.shopappbackend.responses.order.OrderResponse;
+import com.hoangtien2k3.shopappbackend.responses.product.ProductResponse;
 import com.hoangtien2k3.shopappbackend.services.OrderService;
 import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -132,5 +136,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> findByUserId(Long userId) {
         return orderRepository.findByUserId(userId);
+    }
+
+    @Override
+    public Page<OrderResponse> findByKeyword(String keyword, Pageable pageable) {
+        // lấy danh sách sản phẩm theo trang(page) và giới hạn(limit)
+        Page<Order> orderPage;
+        orderPage = orderRepository.findByKeyword(keyword, pageable);
+        return orderPage.map(OrderResponse::fromOrder);
     }
 }

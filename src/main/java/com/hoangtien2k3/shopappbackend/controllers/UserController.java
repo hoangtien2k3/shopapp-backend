@@ -29,6 +29,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
+    @Transactional
     public ResponseEntity<RegisterResponse> createUser(@RequestBody @Valid UserDTO userDTO,
                                                        BindingResult bindingResult) {
         try {
@@ -109,9 +110,10 @@ public class UserController {
     }
 
     @PutMapping("/details/{userId}")
+    @Transactional
     public ResponseEntity<?> updateUserDetails(
             @PathVariable Long userId,
-            @RequestBody @Valid UserDTO userDTO,
+            @RequestBody @Valid UpdateUserDTO updateUserDTO,
             @RequestHeader("Authorization") String token
     ) {
         try {
@@ -120,7 +122,7 @@ public class UserController {
             if (!user.getId().equals(userId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            User updateUser = userService.updateUser(userId, userDTO);
+            User updateUser = userService.updateUser(userId, updateUserDTO);
             return ResponseEntity.ok(UserResponse.fromUser(updateUser));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

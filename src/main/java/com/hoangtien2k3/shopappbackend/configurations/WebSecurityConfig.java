@@ -7,20 +7,28 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+//@EnableMethodSecurity
+@EnableWebMvc
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
+    private final AuthenticationProvider authenticationProvider;
 
     @Value("${api.prefix}")
     private String apiPrefix;
@@ -38,6 +46,10 @@ public class WebSecurityConfig {
                                 String.format("%s/products**", apiPrefix),
                                 String.format("%s/orders/**", apiPrefix)
                         ).permitAll()
+
+                        // Pre-authorization users
+                        .requestMatchers(HttpMethod.PUT,
+                                String.format("%s/users/details/**", apiPrefix)).hasRole(RoleType.USER)
 
                         // Pre-authorization categories
                         .requestMatchers(HttpMethod.GET,
@@ -78,7 +90,10 @@ public class WebSecurityConfig {
                                 String.format("%s/order_details/**", apiPrefix)).hasRole(RoleType.ADMIN)
 
                         .anyRequest().authenticated()
-                );
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider);
 
         return http.build();
     }

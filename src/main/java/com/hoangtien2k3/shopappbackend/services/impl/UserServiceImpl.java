@@ -1,6 +1,7 @@
 package com.hoangtien2k3.shopappbackend.services.impl;
 
 import com.hoangtien2k3.shopappbackend.components.JwtTokenUtil;
+import com.hoangtien2k3.shopappbackend.dtos.UpdateUserDTO;
 import com.hoangtien2k3.shopappbackend.dtos.UserDTO;
 import com.hoangtien2k3.shopappbackend.exceptions.DataNotFoundException;
 import com.hoangtien2k3.shopappbackend.exceptions.PermissionDenyException;
@@ -112,52 +113,41 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
     @Override
     @Transactional
-    public User updateUser(Long userId, UserDTO userDTO) throws Exception {
+    public User updateUser(Long userId, UpdateUserDTO updateUserDTO) throws Exception {
         // find the exists user by userid
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
 
-        String phoneNumber = userDTO.getPhoneNumber();
-        if (!existingUser.getPhoneNumber().equals(phoneNumber)) {
+        String phoneNumber = updateUserDTO.getPhoneNumber();
+        if (!existingUser.getPhoneNumber().equals(phoneNumber)
+                && userRepository.existsByPhoneNumber(phoneNumber)) {
             throw new DataIntegrityViolationException("Phone number does not match");
         }
 
-        Role updateRole = roleRepository.findById(userDTO.getRoleId())
-                .orElseThrow(() -> new DataNotFoundException("Role not found"));
-
-        if (updateRole.getName().equalsIgnoreCase(RoleType.ADMIN)) {
-            throw new PermissionDenyException("Admin role cannot be updated");
+        if (updateUserDTO.getFullName() != null) {
+            existingUser.setFullName(updateUserDTO.getFullName());
         }
-
-        // Update user info
-
-
-        if (userDTO.getFullName() != null) {
-            existingUser.setFullName(userDTO.getFullName());
+        if (updateUserDTO.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(updateUserDTO.getPhoneNumber());
         }
-        if (userDTO.getPhoneNumber() != null) {
-            existingUser.setPhoneNumber(userDTO.getPhoneNumber());
+        if (updateUserDTO.getAddress() != null) {
+            existingUser.setAddress(updateUserDTO.getAddress());
         }
-        if (userDTO.getAddress() != null) {
-            existingUser.setAddress(userDTO.getAddress());
+        if (updateUserDTO.getDateOfBirth() != null) {
+            existingUser.setDateOfBirth(updateUserDTO.getDateOfBirth());
         }
-        if (userDTO.getDateOfBirth() != null) {
-            existingUser.setDateOfBirth(userDTO.getDateOfBirth());
+        if (updateUserDTO.getFacebookAccountId() > 0) {
+            existingUser.setFacebookAccountId(updateUserDTO.getFacebookAccountId());
         }
-        if (userDTO.getFacebookAccountId() > 0) {
-            existingUser.setFacebookAccountId(userDTO.getFacebookAccountId());
+        if (updateUserDTO.getGoogleAccountId() > 0) {
+            existingUser.setGoogleAccountId(updateUserDTO.getGoogleAccountId());
         }
-        if (userDTO.getGoogleAccountId() > 0) {
-            existingUser.setGoogleAccountId(userDTO.getGoogleAccountId());
-        }
-//        existingUser.setRole(updateRole); // user khoong update được role
 
         // update the password
-        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            String newPassword = passwordEncoder.encode(userDTO.getPassword());
+        if (updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isEmpty()) {
+            String newPassword = passwordEncoder.encode(updateUserDTO.getPassword());
             existingUser.setPassword(newPassword);
         }
 
