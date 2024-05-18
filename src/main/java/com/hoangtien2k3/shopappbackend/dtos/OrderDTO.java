@@ -1,13 +1,13 @@
 package com.hoangtien2k3.shopappbackend.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 public class OrderDTO {
-    @Min(value = 1, message = "{user_id_required}")
+    @Min(value = 1, message = MessageKeys.USER_ID_REQUIRED)
     @JsonProperty("user_id")
     private Long userId;
 
@@ -25,8 +25,8 @@ public class OrderDTO {
 
     private String email;
 
-    @NotBlank(message = "{phone_number.required}")
-    @Size(min = 5, message = "{phone_number_size.required}")
+    @NotBlank(message = MessageKeys.PHONE_NUMBER_REQUIRED)
+    @Size(min = 10, message = MessageKeys.PHONE_NUMBER_SIZE_REQUIRED)
     @JsonProperty("phone_number")
     private String phoneNumber;
 
@@ -34,7 +34,7 @@ public class OrderDTO {
     private String note;
 
     @JsonProperty("total_money")
-    @Min(value = 0, message = "{total_money.required}")
+    @Min(value = 0, message = MessageKeys.TOTAL_MONEY_REQUIRED)
     private Float totalMoney;
 
     @JsonProperty("shipping_method")

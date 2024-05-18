@@ -1,10 +1,8 @@
 package com.hoangtien2k3.shopappbackend.responses.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hoangtien2k3.shopappbackend.models.Role;
 import com.hoangtien2k3.shopappbackend.models.User;
-import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;

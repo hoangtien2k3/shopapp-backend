@@ -28,7 +28,7 @@ spring:
   messages:
     basename: i18n/messages
     encoding: UTF-8
-    default-locale: en
+    default-locale: en    # mặc định english
 
 api:
   prefix: api/v1

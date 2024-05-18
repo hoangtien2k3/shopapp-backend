@@ -2,8 +2,8 @@ package com.hoangtien2k3.shopappbackend.services.impl;
 
 import com.hoangtien2k3.shopappbackend.dtos.ProductDTO;
 import com.hoangtien2k3.shopappbackend.dtos.ProductImageDTO;
-import com.hoangtien2k3.shopappbackend.exceptions.DataNotFoundException;
-import com.hoangtien2k3.shopappbackend.exceptions.InvalidParamException;
+import com.hoangtien2k3.shopappbackend.exceptions.payload.DataNotFoundException;
+import com.hoangtien2k3.shopappbackend.exceptions.payload.InvalidParamException;
 import com.hoangtien2k3.shopappbackend.mapper.ProductMapper;
 import com.hoangtien2k3.shopappbackend.models.Category;
 import com.hoangtien2k3.shopappbackend.models.Product;

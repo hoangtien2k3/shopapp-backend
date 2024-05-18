@@ -1,10 +1,12 @@
 package com.hoangtien2k3.shopappbackend.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import javax.print.attribute.standard.MediaSize;
 import java.util.Date;
 
 @Data
@@ -17,16 +19,16 @@ public class UserDTO {
     private String fullName;
 
     @JsonProperty("phone_number")
-    @NotBlank(message = "{phone_number.required}")
+    @NotBlank(message = MessageKeys.PHONE_NUMBER_REQUIRED)
     private String phoneNumber;
 
     private String address;
 
-    @NotBlank(message = "{password.required}")
+    @NotBlank(message = MessageKeys.PASSWORD_REQUIRED)
     private String password;
 
     @JsonProperty("retype_password")
-    @NotBlank(message = "{retype_password.required}")
+    @NotBlank(message = MessageKeys.RETYPE_PASSWORD_REQUIRED)
     private String retypePassword;
 
     @JsonProperty("date_of_birth")
@@ -39,6 +41,6 @@ public class UserDTO {
     private int googleAccountId;
 
     @JsonProperty("role_id")
-    @NotNull(message = "{role_id_required}")
+    @NotNull(message = MessageKeys.ROLE_ID_REQUIRED)
     private Long roleId;
 }

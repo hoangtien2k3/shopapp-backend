@@ -1,5 +1,6 @@
 package com.hoangtien2k3.shopappbackend.dtos;
 
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
@@ -9,6 +10,6 @@ import lombok.*;
 @Getter
 @Setter
 public class CategoryDTO {
-    @NotEmpty(message = "{categories_name.required}")
+    @NotEmpty(message = MessageKeys.CATEGORIES_NAME_REQUIRED)
     private String name;
 }

@@ -2,16 +2,19 @@ package com.hoangtien2k3.shopappbackend.responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     private boolean success;
     private String message;
-    private T result;
+    private T payload;
+    private List<String> errors;
+    private String error;
+    private Long id;
 }

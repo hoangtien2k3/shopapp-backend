@@ -2,9 +2,12 @@ package com.hoangtien2k3.shopappbackend.controllers;
 
 import com.hoangtien2k3.shopappbackend.dtos.OrderDTO;
 import com.hoangtien2k3.shopappbackend.models.Order;
+import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
 import com.hoangtien2k3.shopappbackend.responses.order.OrderListResponse;
 import com.hoangtien2k3.shopappbackend.responses.order.OrderResponse;
 import com.hoangtien2k3.shopappbackend.services.OrderService;
+import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -24,6 +27,7 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final LocalizationUtils localizationUtils;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("")
@@ -35,13 +39,29 @@ public class OrderController {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toList();
-                return ResponseEntity.badRequest().body(errorMessages);
+                return ResponseEntity.badRequest().body(
+                        ApiResponse.builder()
+                                .success(false)
+                                .errors(errorMessages.stream()
+                                        .map(this::translate)
+                                        .toList()).build()
+                );
             }
 
             Order order = orderService.createOrder(orderDTO);
-            return ResponseEntity.ok().body(order);
+            return ResponseEntity.ok().body(
+                    ApiResponse.<Order>builder()
+                            .success(true)
+                            .message(translate(MessageKeys.CREATE_ORDER_SUCCESS, order.getId()))
+                            .payload(order)
+                            .build()
+            );
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.builder()
+                            .success(false)
+                            .error(translate(MessageKeys.CREATE_ORDER_FAILED)).build()
+            );
         }
     }
 
@@ -55,9 +75,16 @@ public class OrderController {
             // lấy ra danh sách đơn hàng của userId
             List<Order> orders = orderService.findByUserId(userId);
             List<OrderResponse> orderResponses = OrderResponse.fromOrdersList(orders);
-            return ResponseEntity.ok(orderResponses);
+            return ResponseEntity.ok(ApiResponse.builder()
+                    .success(true)
+                    .payload(orderResponses)
+                    .build()
+            );
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .success(false)
+                    .error(translate(MessageKeys.GET_INFORMATION_FAILED))
+                    .build());
         }
     }
 
@@ -70,9 +97,16 @@ public class OrderController {
         try {
             Order existsOrder = orderService.getOrderById(orderId);
             OrderResponse orderResponse = OrderResponse.fromOrder(existsOrder);
-            return ResponseEntity.ok(orderResponse);
+            return ResponseEntity.ok(ApiResponse.builder()
+                    .success(true)
+                    .payload(orderResponse)
+                    .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .success(false)
+                    .error(translate(MessageKeys.GET_INFORMATION_FAILED))
+                    .build()
+            );
         }
     }
 
@@ -112,9 +146,18 @@ public class OrderController {
     ) {
         try {
             Order order = orderService.updateOrder(id, orderDTO);
-            return ResponseEntity.ok().body(order);
+            return ResponseEntity.ok().body(ApiResponse.builder()
+                    .success(true)
+                    .message(translate(MessageKeys.MESSAGE_UPDATE_GET, order.getId()))
+                    .payload(order)
+                    .build()
+            );
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .success(false)
+                    .error(translate(MessageKeys.GET_INFORMATION_FAILED))
+                    .build()
+            );
         }
     }
 
@@ -122,8 +165,28 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrder(@Valid @PathVariable long id) {
         // xoá mềm => cập nhật trường active false
-        orderService.deleteOrder(id);
-        return ResponseEntity.ok().body("Delete order successful");
+        try {
+            orderService.deleteOrder(id);
+            return ResponseEntity.ok().body(ApiResponse.builder()
+                    .success(true)
+                    .message(translate(MessageKeys.MESSAGE_DELETE_SUCCESS, id))
+                    .id(id)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.ok().body(ApiResponse.builder()
+                    .success(false)
+                    .message(translate(MessageKeys.MESSAGE_DELETE_FAILED, id))
+                    .build());
+        }
+    }
+
+    // translate message
+    private String translate(String message) {
+        return localizationUtils.getLocalizedMessage(message);
+    }
+
+    private String translate(String message, Object... listMessage) {
+        return localizationUtils.getLocalizedMessage(message, listMessage);
     }
 
 }

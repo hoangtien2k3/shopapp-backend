@@ -1,20 +1,25 @@
 package com.hoangtien2k3.shopappbackend.services.impl;
 
 import com.hoangtien2k3.shopappbackend.components.JwtTokenUtil;
+import com.hoangtien2k3.shopappbackend.dtos.RefreshTokenDTO;
 import com.hoangtien2k3.shopappbackend.dtos.UpdateUserDTO;
 import com.hoangtien2k3.shopappbackend.dtos.UserDTO;
-import com.hoangtien2k3.shopappbackend.exceptions.DataNotFoundException;
-import com.hoangtien2k3.shopappbackend.exceptions.PermissionDenyException;
+import com.hoangtien2k3.shopappbackend.exceptions.payload.DataNotFoundException;
+import com.hoangtien2k3.shopappbackend.exceptions.payload.PermissionDenyException;
 import com.hoangtien2k3.shopappbackend.mapper.UserMapper;
 import com.hoangtien2k3.shopappbackend.models.Role;
+import com.hoangtien2k3.shopappbackend.models.Token;
 import com.hoangtien2k3.shopappbackend.models.User;
 import com.hoangtien2k3.shopappbackend.repositories.RoleRepository;
+import com.hoangtien2k3.shopappbackend.repositories.TokenRepository;
 import com.hoangtien2k3.shopappbackend.repositories.UserRepository;
+import com.hoangtien2k3.shopappbackend.responses.user.LoginResponse;
 import com.hoangtien2k3.shopappbackend.services.UserService;
 import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import com.hoangtien2k3.shopappbackend.utils.RoleType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -31,11 +37,16 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final TokenService refreshTokenService;
     private final JwtTokenUtil jwtTokenUtil;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final LocalizationUtils localizationUtils;
+    private final TokenRepository tokenRepository;
+
+    @Value("${jwt.expiration}")
+    private int expiration;
 
     @Override
     @Transactional
@@ -69,7 +80,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String login(String phoneNumber, String password) throws Exception {
+    public LoginResponse login(String phoneNumber, String password) throws Exception {
         // exists by user
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
         if (optionalUser.isEmpty()) {
@@ -94,7 +105,33 @@ public class UserServiceImpl implements UserService {
                         user.getAuthorities()
                 )
         );
-        return jwtTokenUtil.generateToken(user);
+
+        // generate token and refreshToken
+        var token = jwtTokenUtil.generateToken(user);
+        var refreshToken = refreshTokenService.createRefreshToken(user.getPhoneNumber());
+
+        return LoginResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken.getRefreshToken())
+                .build();
+    }
+
+
+    // dùng refresh_token để tạo lại token mới
+    @Override
+    public LoginResponse refreshToken(RefreshTokenDTO refreshTokenDTO) {
+        Token token = refreshTokenService.verifyRefreshToken(refreshTokenDTO.getRefreshToken());
+
+        //check refreshToken isExpired
+        if (token.getExpirationTime().isBefore(Instant.now())) {
+            throw new PermissionDenyException("Refresh token has expired. Please log in again");
+        }
+
+        // generate new token by refreshToken
+        return LoginResponse.builder()
+                .token(jwtTokenUtil.generateToken(token.getUser()))
+                .refreshToken(token.getRefreshToken())
+                .build();
     }
 
     @Override
