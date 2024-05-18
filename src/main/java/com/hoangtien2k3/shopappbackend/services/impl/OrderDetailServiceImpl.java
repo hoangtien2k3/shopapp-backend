@@ -9,6 +9,8 @@ import com.hoangtien2k3.shopappbackend.repositories.OrderDetailRepository;
 import com.hoangtien2k3.shopappbackend.repositories.OrderRepository;
 import com.hoangtien2k3.shopappbackend.repositories.ProductRepository;
 import com.hoangtien2k3.shopappbackend.services.OrderDetailService;
+import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,15 +24,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderDetailRepository orderDetailRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final LocalizationUtils localizationUtils;
 
     @Override
     @Transactional
     public OrderDetail createOrderDetail(OrderDetailDTO orderDetailDTO) throws DataNotFoundException {
         // tìm xem orderId có tồn tại hay không
         Order order = orderRepository.findById(orderDetailDTO.getOrderId())
-                .orElseThrow(() -> new DataNotFoundException("Can't found order with id " + orderDetailDTO.getOrderId()));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND, orderDetailDTO.getOrderId())));
         Product product = productRepository.findById(orderDetailDTO.getProductId())
-                .orElseThrow(() -> new DataNotFoundException("Can't found product with id " + orderDetailDTO.getProductId()));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND, orderDetailDTO.getProductId())));
 
         OrderDetail orderDetail = OrderDetail.builder()
                 .order(order)
@@ -48,7 +51,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     public OrderDetail getOrderDetail(Long id) throws DataNotFoundException {
         return orderDetailRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Can't found order with id " + id));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND, id)));
     }
 
     @Override
@@ -57,9 +60,9 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         // tìm xem orderDetail có tồn tại hay không
         OrderDetail existsOrderDetail = getOrderDetail(id);
         Order existsOrder = orderRepository.findById(orderDetailDTO.getOrderId())
-                .orElseThrow(() -> new DataNotFoundException("Can't found order with id " + orderDetailDTO.getOrderId()));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND, orderDetailDTO.getOrderId())));
         Product existsProduct = productRepository.findById(orderDetailDTO.getProductId())
-                .orElseThrow(() -> new DataNotFoundException("Can't found order with id " + orderDetailDTO.getProductId()));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND, orderDetailDTO.getProductId())));
 
         existsOrderDetail.setProduct(existsProduct);
         existsOrderDetail.setNumberOfProducts(orderDetailDTO.getNumberOfProducts());
@@ -80,5 +83,9 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     public List<OrderDetail> findByOrderId(Long orderId) {
         return orderDetailRepository.findByOrderId(orderId);
+    }
+
+    private String translate(String message, Object... listMessages) {
+        return localizationUtils.getLocalizedMessage(message, listMessages);
     }
 }

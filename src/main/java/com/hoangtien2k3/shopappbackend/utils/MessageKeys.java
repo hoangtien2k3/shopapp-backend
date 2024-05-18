@@ -11,6 +11,9 @@ public class MessageKeys {
     // register
     public static final String PASSWORD_NOT_MATCH = "user.register.password_not_match";
     public static final String REGISTER_SUCCESS = "user.register.register_successlly";
+    public static final String USER_NOT_FOUND = "user.not_found";
+    public static final String TOKEN_EXPIRATION_TIME = "token.expiration.time";
+    public static final String NOT_FOUND = "not_found";
 
     // validation
     public static final String ERROR_MESSAGE = "message.error";
@@ -49,5 +52,6 @@ public class MessageKeys {
 
     public static final String APP_AUTHORIZATION_403 = "app.authorization.403";
     public static final String APP_UNCATEGORIZED_500 = "app.uncategorized.500";
+    public static final String APP_PERMISSION_DENY_EXCEPTION = "app.permission.deny.exception";
 
 }

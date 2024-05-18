@@ -19,7 +19,6 @@ import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import com.hoangtien2k3.shopappbackend.utils.RoleType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -45,9 +44,6 @@ public class UserServiceImpl implements UserService {
     private final LocalizationUtils localizationUtils;
     private final TokenRepository tokenRepository;
 
-    @Value("${jwt.expiration}")
-    private int expiration;
-
     @Override
     @Transactional
     public User createUser(UserDTO userDTO) throws Exception {
@@ -56,13 +52,13 @@ public class UserServiceImpl implements UserService {
         // kiểm tra xem số điện thoại đã tồn tại hay chưa
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
             throw new DataIntegrityViolationException(
-                    localizationUtils.getLocalizedMessage(MessageKeys.PHONE_NUMBER_EXISTED));
+                    translate(MessageKeys.PHONE_NUMBER_EXISTED));
         }
         Role role = roleRepository.findById(userDTO.getRoleId()).
                 orElseThrow(() -> new DataNotFoundException("Role not found"));
         if (role.getName().equalsIgnoreCase(RoleType.ADMIN)) {
             throw new PermissionDenyException(
-                    localizationUtils.getLocalizedMessage(MessageKeys.CAN_NOT_CREATE_ACCOUNT_ROLE_ADMIN));
+                    translate(MessageKeys.CAN_NOT_CREATE_ACCOUNT_ROLE_ADMIN));
         }
 
         // convert userDTO -> user
@@ -85,7 +81,7 @@ public class UserServiceImpl implements UserService {
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
         if (optionalUser.isEmpty()) {
             throw new DataNotFoundException(
-                    localizationUtils.getLocalizedMessage(MessageKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
+                    translate(MessageKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
             );
         }
         User user = optionalUser.get();
@@ -93,7 +89,7 @@ public class UserServiceImpl implements UserService {
         if (user.getFacebookAccountId() == 0 && user.getGoogleAccountId() == 0) {
             if (!passwordEncoder.matches(password, user.getPassword())) {
                 throw new BadCredentialsException(
-                        localizationUtils.getLocalizedMessage(MessageKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
+                        translate(MessageKeys.PHONE_NUMBER_AND_PASSWORD_FAILED)
                 );
             }
         }
@@ -108,7 +104,7 @@ public class UserServiceImpl implements UserService {
 
         // generate token and refreshToken
         var token = jwtTokenUtil.generateToken(user);
-        var refreshToken = refreshTokenService.createRefreshToken(user.getPhoneNumber());
+        var refreshToken = refreshTokenService.createRefreshToken(token, user.getPhoneNumber());
 
         return LoginResponse.builder()
                 .token(token)
@@ -124,7 +120,7 @@ public class UserServiceImpl implements UserService {
 
         //check refreshToken isExpired
         if (token.getExpirationTime().isBefore(Instant.now())) {
-            throw new PermissionDenyException("Refresh token has expired. Please log in again");
+            throw new PermissionDenyException(translate(MessageKeys.APP_PERMISSION_DENY_EXCEPTION));
         }
 
         // generate new token by refreshToken
@@ -137,7 +133,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserDetailsFromToken(String token) throws Exception {
         if (jwtTokenUtil.isTokenExpirated(token)) {
-            throw new Exception("Token is expired");
+            throw new Exception(translate(MessageKeys.TOKEN_EXPIRATION_TIME));
         }
 
         String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
@@ -146,7 +142,7 @@ public class UserServiceImpl implements UserService {
         if (optionalUser.isPresent()) {
             return optionalUser.get();
         } else {
-            throw new DataNotFoundException("User not found");
+            throw new DataNotFoundException(translate(MessageKeys.USER_NOT_FOUND));
         }
     }
 
@@ -155,12 +151,12 @@ public class UserServiceImpl implements UserService {
     public User updateUser(Long userId, UpdateUserDTO updateUserDTO) throws Exception {
         // find the exists user by userid
         User existingUser = userRepository.findById(userId)
-                .orElseThrow(() -> new DataNotFoundException("User not found"));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.USER_NOT_FOUND)));
 
         String phoneNumber = updateUserDTO.getPhoneNumber();
         if (!existingUser.getPhoneNumber().equals(phoneNumber)
                 && userRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new DataIntegrityViolationException("Phone number does not match");
+            throw new DataIntegrityViolationException(translate(MessageKeys.PASSWORD_NOT_MATCH));
         }
 
         if (updateUserDTO.getFullName() != null) {
@@ -190,4 +186,9 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.save(existingUser);
     }
+
+    private String translate(String message) {
+        return localizationUtils.getLocalizedMessage(message);
+    }
+
 }

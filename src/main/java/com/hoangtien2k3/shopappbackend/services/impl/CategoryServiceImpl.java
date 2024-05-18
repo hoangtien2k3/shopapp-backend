@@ -4,6 +4,8 @@ import com.hoangtien2k3.shopappbackend.dtos.CategoryDTO;
 import com.hoangtien2k3.shopappbackend.models.Category;
 import com.hoangtien2k3.shopappbackend.repositories.CategoryRepository;
 import com.hoangtien2k3.shopappbackend.services.CategoryService;
+import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,7 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final LocalizationUtils localizationUtils;
 
     @Override
     @Transactional
@@ -28,7 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category getCategoryById(Long categoryId) {
         return categoryRepository.findById(categoryId).
-                orElseThrow(() -> new RuntimeException("Category not found"));
+                orElseThrow(() -> new RuntimeException(localizationUtils.getLocalizedMessage(MessageKeys.NOT_FOUND)));
     }
 
     @Override
@@ -50,4 +53,5 @@ public class CategoryServiceImpl implements CategoryService {
         // xoá cứng trong DB
         categoryRepository.deleteById(categoryId);
     }
+
 }

@@ -40,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(OrderDTO orderDTO) throws DataNotFoundException {
         // kiểm tra xem userId có tồn tại hay không
         User user = userRepository.findById(orderDTO.getUserId())
-                .orElseThrow(() -> new DataNotFoundException("User not found with id: " + orderDTO.getUserId()));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND, orderDTO.getUserId())));
 
         // convert orderDTO -> order
         // using modelMapper
@@ -59,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
                 ? LocalDate.now()
                 : orderDTO.getShippingDate();
         if (shippingDate.isBefore(LocalDate.now())) {
-            throw new DataNotFoundException("Date must be at lest today !");
+            throw new DataNotFoundException(translate(MessageKeys.TOKEN_EXPIRATION_TIME));
         }
         order.setShippingDate(shippingDate); // set thời điểm giao hàng
         order.setActive(true); // trạng thái đơn hàng đã được active
@@ -79,9 +79,7 @@ public class OrderServiceImpl implements OrderService {
             // tìm thông tin sản phẩm từ cơ sở dữ liệu
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new DataNotFoundException(
-                            localizationUtils.getLocalizedMessage(
-                                    MessageKeys.PRODUCT_NOT_FOUND, productId
-                            ))
+                            translate(MessageKeys.PRODUCT_NOT_FOUND, productId))
                     );
 
             // Đặt thông tin cho orderDetails
@@ -107,9 +105,9 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Order updateOrder(Long id, OrderDTO orderDTO) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Can't find order with id: " + id));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND, id)));
         User existsUser = userRepository.findById(orderDTO.getUserId())
-                .orElseThrow(() -> new DataNotFoundException("Can't find order with id: " + id));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND, orderDTO.getUserId())));
 
         // tạo một luồng ánh xạ
         modelMapper.typeMap(OrderDTO.class, Order.class)
@@ -144,4 +142,12 @@ public class OrderServiceImpl implements OrderService {
         orderPage = orderRepository.findByKeyword(keyword, pageable);
         return orderPage.map(OrderResponse::fromOrder);
     }
+
+    private String translate(String message) {
+        return localizationUtils.getLocalizedMessage(message);
+    }
+    private String translate(String message, Object... listMessages) {
+        return localizationUtils.getLocalizedMessage(message, listMessages);
+    }
+
 }
