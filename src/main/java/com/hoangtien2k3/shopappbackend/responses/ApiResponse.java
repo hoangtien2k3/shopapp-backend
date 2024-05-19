@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
-    private boolean success;
+    private boolean success = false;
     private String message;
     private T payload;
     private List<String> errors;

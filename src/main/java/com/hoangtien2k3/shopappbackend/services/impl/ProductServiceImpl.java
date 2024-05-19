@@ -1,5 +1,6 @@
 package com.hoangtien2k3.shopappbackend.services.impl;
 
+import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.dtos.ProductDTO;
 import com.hoangtien2k3.shopappbackend.dtos.ProductImageDTO;
 import com.hoangtien2k3.shopappbackend.exceptions.payload.DataNotFoundException;
@@ -26,13 +27,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ProductServiceImpl implements ProductService {
+public class ProductServiceImpl extends TranslateMessages
+        implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
     private final ProductMapper productMapper;
-    private final LocalizationUtils localizationUtils;
 
     @Override
     @Transactional
@@ -138,10 +139,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findProductsByIds(List<Long> productIds) {
         return productRepository.findProductByIds(productIds);
-    }
-
-    private String translate(String message, Object... listMessages) {
-        return localizationUtils.getLocalizedMessage(message, listMessages);
     }
 
 }

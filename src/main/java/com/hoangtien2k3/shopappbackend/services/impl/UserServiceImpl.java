@@ -1,6 +1,7 @@
 package com.hoangtien2k3.shopappbackend.services.impl;
 
 import com.hoangtien2k3.shopappbackend.components.JwtTokenUtil;
+import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.dtos.RefreshTokenDTO;
 import com.hoangtien2k3.shopappbackend.dtos.UpdateUserDTO;
 import com.hoangtien2k3.shopappbackend.dtos.UserDTO;
@@ -11,11 +12,9 @@ import com.hoangtien2k3.shopappbackend.models.Role;
 import com.hoangtien2k3.shopappbackend.models.Token;
 import com.hoangtien2k3.shopappbackend.models.User;
 import com.hoangtien2k3.shopappbackend.repositories.RoleRepository;
-import com.hoangtien2k3.shopappbackend.repositories.TokenRepository;
 import com.hoangtien2k3.shopappbackend.repositories.UserRepository;
 import com.hoangtien2k3.shopappbackend.responses.user.LoginResponse;
 import com.hoangtien2k3.shopappbackend.services.UserService;
-import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import com.hoangtien2k3.shopappbackend.utils.RoleType;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends TranslateMessages implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -41,12 +40,11 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final LocalizationUtils localizationUtils;
-    private final TokenRepository tokenRepository;
 
     @Override
     @Transactional
-    public User createUser(UserDTO userDTO) throws Exception {
+    public User createUser(UserDTO userDTO)
+            throws DataIntegrityViolationException, PermissionDenyException {
         // register new user
         String phoneNumber = userDTO.getPhoneNumber();
         // kiểm tra xem số điện thoại đã tồn tại hay chưa
@@ -76,7 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public LoginResponse login(String phoneNumber, String password) throws Exception {
+    public LoginResponse login(String phoneNumber, String password) throws DataNotFoundException {
         // exists by user
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
         if (optionalUser.isEmpty()) {
@@ -148,7 +146,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateUser(Long userId, UpdateUserDTO updateUserDTO) throws Exception {
+    public User updateUser(Long userId, UpdateUserDTO updateUserDTO)
+            throws DataIntegrityViolationException, DataNotFoundException {
         // find the exists user by userid
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.USER_NOT_FOUND)));
@@ -186,9 +185,4 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.save(existingUser);
     }
-
-    private String translate(String message) {
-        return localizationUtils.getLocalizedMessage(message);
-    }
-
 }

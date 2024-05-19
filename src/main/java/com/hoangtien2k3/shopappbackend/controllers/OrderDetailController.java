@@ -1,9 +1,13 @@
 package com.hoangtien2k3.shopappbackend.controllers;
 
+import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.dtos.OrderDetailDTO;
 import com.hoangtien2k3.shopappbackend.models.OrderDetail;
+import com.hoangtien2k3.shopappbackend.models.User;
+import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
 import com.hoangtien2k3.shopappbackend.responses.order_detail.OrderDetailResponse;
 import com.hoangtien2k3.shopappbackend.services.OrderDetailService;
+import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -17,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("${api.prefix}/order_details")
-public class OrderDetailController {
+public class OrderDetailController extends TranslateMessages {
 
     private final OrderDetailService orderDetailService;
 
@@ -33,13 +37,23 @@ public class OrderDetailController {
                         .stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage)
                         .toList();
-                return ResponseEntity.badRequest().body(errorMessages);
+                return ResponseEntity.badRequest().body(
+                        ApiResponse.builder()
+                                .message(translate(MessageKeys.ERROR_MESSAGE))
+                                .errors(errorMessages.stream().map(this::translate).toList()).build()
+                );
             }
 
             OrderDetail newOrderDetail = orderDetailService.createOrderDetail(orderDetailDTO);
-            return ResponseEntity.ok(OrderDetailResponse.fromOrderDetail(newOrderDetail));
+            return ResponseEntity.ok(ApiResponse.builder().success(true)
+                    .message(translate(MessageKeys.CREATE_ORDER_DETAILS_SUCCESS))
+                    .payload(OrderDetailResponse.fromOrderDetail(newOrderDetail)).build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.builder()
+                            .message(translate(MessageKeys.CREATE_ORDER_DETAILS_SUCCESS))
+                            .error(e.getMessage()).build()
+            );
         }
     }
 
@@ -47,7 +61,7 @@ public class OrderDetailController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderDetail(@Valid @PathVariable("id") Long id) throws Exception {
         OrderDetail orderDetail = orderDetailService.getOrderDetail(id);
-        return ResponseEntity.ok(orderDetail);
+        return ResponseEntity.ok(ApiResponse.builder().success(true).payload(OrderDetailResponse.fromOrderDetail(orderDetail)).build());
         // return ResponseEntity.ok(OrderDetailResponse.fromOrderDetail(orderDetail));
     }
 
@@ -58,7 +72,7 @@ public class OrderDetailController {
                 .stream()
                 .map(OrderDetailResponse::fromOrderDetail)
                 .toList();
-        return ResponseEntity.ok(orderDetailResponses);
+        return ResponseEntity.ok(ApiResponse.builder().success(true).payload(orderDetailResponses).build());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -69,9 +83,9 @@ public class OrderDetailController {
     ) {
         try {
             OrderDetail orderDetail = orderDetailService.updateOrderDetail(id, orderDetailDTO);
-            return ResponseEntity.ok(orderDetail);
+            return ResponseEntity.ok(ApiResponse.builder().success(true).payload(OrderDetailResponse.fromOrderDetail(orderDetail)).build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.builder().error(e.getMessage()).build());
         }
     }
 
@@ -80,9 +94,12 @@ public class OrderDetailController {
     public ResponseEntity<?> deleteOrderDetail(@Valid @PathVariable("id") Long id) {
         try {
             orderDetailService.deleteOrderDetail(id);
-            return ResponseEntity.ok().body("Order detail deleted with id " + id);
+            return ResponseEntity.ok().body(ApiResponse.builder().success(true)
+                    .message(translate(MessageKeys.MESSAGE_DELETE_SUCCESS)).build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .error(e.getMessage())
+                    .message(translate(MessageKeys.MESSAGE_DELETE_SUCCESS)).build());
         }
     }
 

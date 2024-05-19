@@ -1,6 +1,8 @@
 create DATABASE shopapp;
 USE shopapp;
 
+-- SET sql_mode = 'STRICT_ALL_TABLES'; -- BẬT CHẾT ĐỘ TRICK MODE CHO TẤT CẢ CÁC TABLE
+
 -- QUẢN LÝ TÀI KHOẢN NGƯỜI DÙNG
 CREATE TABLE users
 (
@@ -41,7 +43,7 @@ CREATE TABLE tokens
     revoked         TINYINT(1)          NOT NULL,
     expired         TINYINT(1)          NOT NULL,
     user_id         INT,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- HỖ TRỢ ĐĂNG NHẬP FACEBOOK VÀ GOOGLE

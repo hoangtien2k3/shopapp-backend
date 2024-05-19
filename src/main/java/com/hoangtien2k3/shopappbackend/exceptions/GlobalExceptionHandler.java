@@ -1,9 +1,9 @@
 package com.hoangtien2k3.shopappbackend.exceptions;
 
+import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.exceptions.payload.DataNotFoundException;
 import com.hoangtien2k3.shopappbackend.exceptions.payload.InvalidParamException;
 import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
-import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
-public class GlobalExceptionHandler {
-
-    private final LocalizationUtils localizationUtils;
+public class GlobalExceptionHandler extends TranslateMessages {
 
     @ExceptionHandler(value = {
             DataNotFoundException.class,
@@ -49,7 +47,7 @@ public class GlobalExceptionHandler {
         ApiResponse apiResponse = new ApiResponse();
 
         apiResponse.setMessage(String.valueOf(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode()));
-        apiResponse.setError(localizationUtils.getLocalizedMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage()));
+        apiResponse.setError(translate(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage()));
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
@@ -71,12 +69,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.builder()
                         .success(false)
                         .message(String.valueOf(errorCode.getCode()))
-                        .error(localizationUtils.getLocalizedMessage(errorCode.getMessage()))
+                        .error(translate(errorCode.getMessage()))
                         .build());
     }
-
-    private String translate(String message) {
-        return localizationUtils.getLocalizedMessage(message);
-    }
-
 }

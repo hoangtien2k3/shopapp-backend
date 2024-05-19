@@ -1,5 +1,6 @@
 package com.hoangtien2k3.shopappbackend.services.impl;
 
+import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.dtos.CartItemDTO;
 import com.hoangtien2k3.shopappbackend.dtos.OrderDTO;
 import com.hoangtien2k3.shopappbackend.exceptions.payload.DataNotFoundException;
@@ -10,7 +11,6 @@ import com.hoangtien2k3.shopappbackend.repositories.ProductRepository;
 import com.hoangtien2k3.shopappbackend.repositories.UserRepository;
 import com.hoangtien2k3.shopappbackend.responses.order.OrderResponse;
 import com.hoangtien2k3.shopappbackend.services.OrderService;
-import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -26,14 +26,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OrderServiceImpl implements OrderService {
+public class OrderServiceImpl extends TranslateMessages
+        implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final ProductRepository productRepository;
-    private LocalizationUtils localizationUtils;
 
     @Override
     @Transactional
@@ -141,13 +141,6 @@ public class OrderServiceImpl implements OrderService {
         Page<Order> orderPage;
         orderPage = orderRepository.findByKeyword(keyword, pageable);
         return orderPage.map(OrderResponse::fromOrder);
-    }
-
-    private String translate(String message) {
-        return localizationUtils.getLocalizedMessage(message);
-    }
-    private String translate(String message, Object... listMessages) {
-        return localizationUtils.getLocalizedMessage(message, listMessages);
     }
 
 }

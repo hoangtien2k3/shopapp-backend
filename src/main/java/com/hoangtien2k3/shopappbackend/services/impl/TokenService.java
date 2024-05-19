@@ -1,6 +1,7 @@
 package com.hoangtien2k3.shopappbackend.services.impl;
 
 import com.hoangtien2k3.shopappbackend.components.JwtTokenUtil;
+import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.exceptions.payload.DataNotFoundException;
 import com.hoangtien2k3.shopappbackend.models.Token;
 import com.hoangtien2k3.shopappbackend.models.User;
@@ -17,16 +18,14 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class TokenService {
+public class TokenService extends TranslateMessages {
 
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
-    private final LocalizationUtils localizationUtils;
-    private final JwtTokenUtil jwtTokenUtil;
 
     public Token createRefreshToken(String token,String phoneNumber) {
         User user = userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_NOT_FOUND, phoneNumber)));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.USER_NOT_FOUND, phoneNumber)));
 
         // Kiểm tra xem người dùng đã có token chưa
         Optional<Token> existingTokenOptional = tokenRepository.findByUserId(user.getId());
@@ -56,7 +55,7 @@ public class TokenService {
 
     public Token verifyRefreshToken(String refreshToken) {
         Token token = tokenRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+                .orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.NOT_FOUND)));
 
         if (token.getExpirationTime().compareTo(Instant.now()) < 0) {
             tokenRepository.delete(token);

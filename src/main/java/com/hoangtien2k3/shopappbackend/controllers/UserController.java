@@ -1,13 +1,15 @@
 package com.hoangtien2k3.shopappbackend.controllers;
 
+import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.dtos.*;
 import com.hoangtien2k3.shopappbackend.dtos.UserLoginDTO;
+import com.hoangtien2k3.shopappbackend.mapper.UserMapper;
 import com.hoangtien2k3.shopappbackend.models.User;
 import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
 import com.hoangtien2k3.shopappbackend.responses.user.LoginResponse;
+import com.hoangtien2k3.shopappbackend.responses.user.UserRegisterResponse;
 import com.hoangtien2k3.shopappbackend.responses.user.UserResponse;
 import com.hoangtien2k3.shopappbackend.services.UserService;
-import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,43 +26,44 @@ import java.util.List;
 @RestController
 @RequestMapping("${api.prefix}/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController extends TranslateMessages {
 
-    private final LocalizationUtils localizationUtils;
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @PostMapping("/register")
     @Transactional
-    public ResponseEntity<ApiResponse<User>> createUser(@RequestBody @Valid UserDTO userDTO,
-                                                        BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<?>> createUser(@RequestBody @Valid UserDTO userDTO,
+                                                     BindingResult bindingResult) {
         try {
             if (bindingResult.hasErrors()) {
                 List<String> errorMessages = bindingResult.getFieldErrors().stream()
                         .map(DefaultMessageSourceResolvable::getDefaultMessage).toList();
                 return ResponseEntity.badRequest().body(
-                        ApiResponse.<User>builder().success(false)
+                        ApiResponse.builder()
+                                .message(translate(MessageKeys.ERROR_MESSAGE))
                                 .errors(errorMessages.stream()
                                         .map(this::translate)
                                         .toList()).build()
                 );
             }
             if (!userDTO.getPassword().equals(userDTO.getRetypePassword())) {
-                return ResponseEntity.badRequest().body(ApiResponse.<User>builder()
-                        .success(false)
+                return ResponseEntity.badRequest().body(ApiResponse.builder()
+                        .message(translate(MessageKeys.ERROR_MESSAGE))
                         .error(translate(MessageKeys.PASSWORD_NOT_MATCH)).build()
                 );
             }
 
             User newUser = userService.createUser(userDTO);
             return ResponseEntity.ok().body(
-                    ApiResponse.<User>builder().success(true)
+                    ApiResponse.builder().success(true)
                             .message(translate(MessageKeys.REGISTER_SUCCESS))
-                            .payload(newUser)
-                            .build()
+                            .payload(UserRegisterResponse.fromUser(newUser)).build()
             );
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(ApiResponse.<User>builder().success(false)
-                    .message(translate(MessageKeys.ERROR_MESSAGE, e.getMessage())).build()
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .error(e.getMessage())
+                    .message(translate(MessageKeys.ERROR_MESSAGE)).error(e.getMessage()).build()
             );
         }
     }
@@ -76,7 +79,6 @@ public class UserController {
                         .map(DefaultMessageSourceResolvable::getDefaultMessage).toList();
                 return ResponseEntity.badRequest().body(
                         ApiResponse.<LoginResponse>builder()
-                                .success(false)
                                 .message(translate(MessageKeys.LOGIN_FAILED))
                                 .errors(errorMessages.stream()
                                         .map(this::translate)
@@ -93,8 +95,9 @@ public class UserController {
             return ResponseEntity.ok().body(apiResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                    ApiResponse.<LoginResponse>builder().success(false)
-                            .error(translate(MessageKeys.LOGIN_FAILED)).build()
+                    ApiResponse.<LoginResponse>builder()
+                            .message(translate(MessageKeys.LOGIN_FAILED))
+                            .error(e.getMessage()).build()
             );
         }
     }
@@ -110,9 +113,8 @@ public class UserController {
             return ResponseEntity.ok().body(apiResponse);
         } catch (Exception e) {
             ApiResponse<LoginResponse> apiResponse = ApiResponse.<LoginResponse>builder()
-                    .success(false)
-                    .error(translate(MessageKeys.ERROR_REFRESH_TOKEN)).build();
-            return ResponseEntity.ok().body(apiResponse);
+                    .message(translate(MessageKeys.ERROR_REFRESH_TOKEN)).error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(apiResponse);
         }
     }
 
@@ -129,8 +131,8 @@ public class UserController {
             );
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                    ApiResponse.<UserResponse>builder().success(false)
-                            .message(translate(MessageKeys.MESSAGE_ERROR_GET)).build()
+                    ApiResponse.<UserResponse>builder()
+                            .message(translate(MessageKeys.MESSAGE_ERROR_GET)).error(e.getMessage()).build()
             );
         }
     }
@@ -155,17 +157,10 @@ public class UserController {
                     .message(translate(MessageKeys.MESSAGE_UPDATE_GET))
                     .payload(UserResponse.fromUser(updateUser)).build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.<UserResponse>builder()
+                            .message(translate(MessageKeys.MESSAGE_ERROR_GET)).error(e.getMessage()).build()
+            );
         }
     }
-
-    // translate message
-    private String translate(String message) {
-        return localizationUtils.getLocalizedMessage(message);
-    }
-
-    private String translate(String message, Object... listMessage) {
-        return localizationUtils.getLocalizedMessage(message, listMessage);
-    }
-
 }
