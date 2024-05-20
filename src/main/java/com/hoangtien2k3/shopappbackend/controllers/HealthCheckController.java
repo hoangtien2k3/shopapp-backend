@@ -12,7 +12,7 @@ import java.net.InetAddress;
 import java.util.List;
 
 @RestController
-@RequestMapping("${api.prefix}/health-check")
+@RequestMapping("${api.prefix}/health_check")
 @AllArgsConstructor
 public class HealthCheckController {
 

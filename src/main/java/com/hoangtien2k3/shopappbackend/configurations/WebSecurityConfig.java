@@ -4,6 +4,7 @@ import com.hoangtien2k3.shopappbackend.filters.JwtTokenFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -37,6 +38,9 @@ public class WebSecurityConfig {
     @Value("${api.prefix}")
     private String apiPrefix;
 
+    @Value("${domain.protocol}")
+    private String domainProtocol;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -46,26 +50,24 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.GET,
                                 String.format("%s/products/**", apiPrefix),
-                                String.format("%s/products?*", apiPrefix),
+                                String.format("%s/products/images/*", apiPrefix),
                                 String.format("%s/orders/**", apiPrefix),
-                                String.format("%s/roles", apiPrefix),
-                                String.format("%s/health-check/**", apiPrefix),
+                                String.format("%s/orders_details/**", apiPrefix),
+                                String.format("%s/roles/**", apiPrefix),
+                                String.format("%s/health_check/**", apiPrefix),
                                 String.format("%s/actuator/**", apiPrefix),
-                                String.format("%s/actuator/health", apiPrefix)
-                        ).permitAll()
-                        // swagger-ui
-                        .requestMatchers(
-                                String.format("%s/v2/api-docs", apiPrefix),
-                                String.format("%s/v3/api-docs", apiPrefix),
-                                String.format("%s/v3/api-docs/**", apiPrefix),
-                                String.format("%s/swagger-resources/**", apiPrefix),
-                                String.format("%s/swagger-ui.html", apiPrefix),
-                                String.format("%s/webjars/**", apiPrefix),
-                                String.format("%s/swagger-resources/configuration/ui", apiPrefix),
-                                String.format("%s/swagger-resources/configuration/security", apiPrefix),
-                                String.format("%s/swagger-ui.html/**", apiPrefix),
-                                String.format("%s/swagger-ui/**", apiPrefix),
-                                String.format("%s/swagger-ui.html/**", apiPrefix)
+                                // sagger-ui
+                                "/v2/api-docs",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/swagger-ui.html",
+                                "/webjars/**",
+                                "/swagger-resources/configuration/ui",
+                                "/swagger-resources/configuration/security",
+                                "/swagger-ui.html/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 String.format("%s/users/register", apiPrefix),
@@ -78,12 +80,10 @@ public class WebSecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
-                        })
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN, accessDeniedException.getMessage());
-                        })
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage()))
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN, accessDeniedException.getMessage()))
                 )
                 .headers(headers -> headers
                         .httpStrictTransportSecurity(hsts -> hsts
@@ -98,13 +98,14 @@ public class WebSecurityConfig {
                         )
                 );
 
+        http.securityMatcher(String.valueOf(EndpointRequest.toAnyEndpoint()));
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080")); // Define allowed origins
+        configuration.setAllowedOrigins(List.of(domainProtocol)); // Define allowed origins
         configuration.setAllowedMethods(List.of(
                 "GET",
                 "POST",

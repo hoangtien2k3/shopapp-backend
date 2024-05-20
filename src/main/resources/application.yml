@@ -36,7 +36,10 @@ spring:
       port: ${REDIS_PORT:6379}
 
 api:
-  prefix: api/v1
+  prefix: /api/v1
+domain:
+  protocol: http://localhost:${server.port}
+
 jwt:
   expiration: 2592000 # 30 days: 30 * 24 * 60 * 60
   secretKey: "QpOD7PxEqUCWRB8BU6e+Hv29TQLUuG+0sxxSJZWAPGhrVVszWZU2hT5RhoQTvhgv"
@@ -50,8 +53,10 @@ logging:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-  api-docs:
-    path: /api-docs
+    tryItOutEnabled: true
+    filter: true
+#  api-docs:
+#    path: /api-docs
   show-actuator: true
 
 #health check

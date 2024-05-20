@@ -18,9 +18,9 @@ import org.springframework.context.annotation.Configuration;
                         email = "hoangtien2k3qx1@gmail.com",
                         url = "hoangtien2k3.github.io/index.html"
                 ),
-                description = "OpenApi documentation for Movie-Api",
-                title = "OpenApi Movie",
-                version = "1.0.0",
+                description = "Open Api documentation for Shopp App",
+                title = "Open Api Shopp App",
+                version = "0.0.1-SNAPSHOT",
                 license = @License(
                         name = "Apache License Version 2.0",
                         url = "https://www.apache.org/licenses/LICENSE-2.0"
@@ -53,5 +53,5 @@ import org.springframework.context.annotation.Configuration;
         in = SecuritySchemeIn.HEADER
 )
 @Configuration
-public class SwaggerOpenApiConfig {
+public class OpenApiConfig {
 }

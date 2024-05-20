@@ -11,6 +11,9 @@ import com.hoangtien2k3.shopappbackend.responses.user.UserRegisterResponse;
 import com.hoangtien2k3.shopappbackend.responses.user.UserResponse;
 import com.hoangtien2k3.shopappbackend.services.UserService;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -31,6 +34,10 @@ public class UserController extends TranslateMessages {
     private final UserService userService;
     private final UserMapper userMapper;
 
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad request")
+    })
     @PostMapping("/register")
     @Transactional
     public ResponseEntity<ApiResponse<?>> createUser(@RequestBody @Valid UserDTO userDTO,
