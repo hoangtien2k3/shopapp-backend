@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+  mysql8-container:
+    container_name: mysql8-container
+    image: mysql:8.2.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: shopapp
+      MYSQL_ROOT_PASSWORD: 12042003
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./sql/shopapp.sql:/docker-entrypoint-initdb.d/init-script.sql
+    networks:
+      - shopapp-network
+
+  redis-container:
+    image: docker.io/redis:7.2.3
+    container_name: redis-container
+    restart: always
+    ports:
+      - "6379:6379" # post mapping redis
+    volumes:
+      - ./redis-data:/data  # mount a volume
+    networks:
+      - shopapp-network
+
+  shopapp-spring-container:
+    container_name: shopapp-spring-container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8099:8088"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql8-container:3306/shopapp?useSSL=false&serverTimezone=UTC
+      MYSQL_ROOT_PASSWORD: 12042003
+    depends_on:
+      - mysql8-container
+    networks:
+      - shopapp-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://shopapp-spring-container:8088/healthcheck/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  shopapp-network:
+    driver: bridge

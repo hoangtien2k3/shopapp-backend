@@ -7,9 +7,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/shopapp?useSSL=false&serverTimezone=UTC
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: root
-    password: 12042003
+    password: ${MYSQL_ROOT_PASSWORD:12042003}
     jpa:
       show-sql: true
       hibernate:
@@ -30,10 +30,15 @@ spring:
     encoding: UTF-8
     default-locale: en    # mặc định english
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
 api:
   prefix: api/v1
 jwt:
   expiration: 2592000 # 30 ngày: 30 * 24 * 60 * 60
   secretKey: "QpOD7PxEqUCWRB8BU6e+Hv29TQLUuG+0sxxSJZWAPGhrVVszWZU2hT5RhoQTvhgv"
 
-
+logging.level.org.springframework.security: DEBUG

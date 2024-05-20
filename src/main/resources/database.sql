@@ -1,4 +1,4 @@
-create DATABASE shopapp;
+CREATE DATABASE shopapp;
 USE shopapp;
 
 -- SET sql_mode = 'STRICT_ALL_TABLES'; -- BẬT CHẾT ĐỘ TRICK MODE CHO TẤT CẢ CÁC TABLE

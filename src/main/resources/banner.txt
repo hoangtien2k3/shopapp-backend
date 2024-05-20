@@ -10,3 +10,5 @@
                 > Designed for Shop app-backend! <
                 > Your One-Stop Shop Companion <
                         > hoangtien2k3 <
+                spring-boot.version: ${spring-boot.formatted-version}
+                application.version: ${spring-boot.version}

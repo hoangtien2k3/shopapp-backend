@@ -19,6 +19,8 @@ import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,10 +62,18 @@ public class ProductServiceImpl extends TranslateMessages
     @Override
     public Page<ProductResponse> getAllProducts(String keyword,
                                                 Long categoryId,
-                                                PageRequest pageRequest) {
-        // lấy danh sách sản phẩm theo trang(page) và giới hạn(limit)
-        Page<Product> productPage;
-        productPage = productRepository.searchProducts(keyword, categoryId, pageRequest);
+                                                PageRequest pageRequest,
+                                                String sortField,
+                                                String sortDirection) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(
+                pageRequest.getPageNumber(),
+                pageRequest.getPageSize(),
+                direction, sortField
+        );
+        Page<Product> productPage = productRepository.searchProducts(keyword, categoryId, pageable);
         return productPage.map(ProductResponse::fromProduct);
     }
 

@@ -1,5 +1,6 @@
 package com.hoangtien2k3.shopappbackend.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.javafaker.Faker;
 import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.dtos.ProductDTO;
@@ -9,6 +10,7 @@ import com.hoangtien2k3.shopappbackend.models.ProductImage;
 import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
 import com.hoangtien2k3.shopappbackend.responses.product.ProductListResponse;
 import com.hoangtien2k3.shopappbackend.responses.product.ProductResponse;
+import com.hoangtien2k3.shopappbackend.services.ProductRedisService;
 import com.hoangtien2k3.shopappbackend.services.ProductService;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.Valid;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -41,6 +44,7 @@ import java.util.stream.Collectors;
 public class ProductController extends TranslateMessages {
 
     private final ProductService productService;
+    private final ProductRedisService productRedisService;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("")
@@ -176,25 +180,42 @@ public class ProductController extends TranslateMessages {
         return contentType != null && contentType.startsWith("image/");
     }
 
-    //    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("")
     public ResponseEntity<ProductListResponse> getProduct(
-            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "", name = "keyword") String keyword,
             @RequestParam(defaultValue = "0", name = "category_id") Long categoryId,
             @RequestParam(defaultValue = "0", name = "page") int page,
-            @RequestParam(defaultValue = "10", name = "limit") int limit
-    ) {
-        // tạo Pageable từ thông tin trang và giới hạn
-        PageRequest pageRequest = PageRequest.of(
-                page,
-                limit,
-                Sort.by("id").ascending()
-        );
-        Page<ProductResponse> productPage = productService.getAllProducts(keyword, categoryId, pageRequest);
+            @RequestParam(defaultValue = "10", name = "limit") int limit,
+            @RequestParam(defaultValue = "id", name = "sort_field") String sortField,
+            @RequestParam(defaultValue = "asc", name = "sort_direction") String sortDirection
+    ) throws JsonProcessingException {
+        PageRequest pageRequest = PageRequest.of(page, limit);
+        // find in redis memory
+        List<ProductResponse> productResponses = productRedisService.getAllProducts(
+                keyword, categoryId, pageRequest, sortField, sortDirection);
 
-        List<ProductResponse> products = productPage.getContent();
+        if (productResponses == null) {
+            Page<ProductResponse> productPage = productService.getAllProducts(keyword, categoryId, pageRequest, sortField, sortDirection);
+            List<ProductResponse> products = productPage.getContent();
+
+            // Lưu sản phẩm vào Redis cache nếu không tìm thấy trong Redis
+            productRedisService.saveAllProducts(products, keyword, categoryId, pageRequest, sortField, sortDirection);
+
+            return ResponseEntity.ok(ProductListResponse.builder()
+                    .products(products)
+                    .pageNumber(page)
+                    .totalElements(productPage.getTotalElements())
+                    .pageSize(productPage.getSize())
+                    .isLast(productPage.isLast())
+                    .totalPages(productPage.getTotalPages())
+                    .build());
+        }
+
+        // Trường hợp tìm thấy sản phẩm trong Redis
+        Page<ProductResponse> productPage = new PageImpl<>(
+                productResponses, pageRequest, productResponses.size());
         return ResponseEntity.ok(ProductListResponse.builder()
-                .products(products)
+                .products(productResponses)
                 .pageNumber(page)
                 .totalElements(productPage.getTotalElements())
                 .pageSize(productPage.getSize())
@@ -202,6 +223,7 @@ public class ProductController extends TranslateMessages {
                 .totalPages(productPage.getTotalPages())
                 .build());
     }
+
 
     //    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     @GetMapping("/{id}")
@@ -212,8 +234,8 @@ public class ProductController extends TranslateMessages {
                     .payload(ProductResponse.fromProduct(existsProducts)).build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.builder()
-                            .message(translate(MessageKeys.GET_INFORMATION_FAILED))
-                            .error(e.getMessage()).build()
+                    .message(translate(MessageKeys.GET_INFORMATION_FAILED))
+                    .error(e.getMessage()).build()
             );
         }
     }

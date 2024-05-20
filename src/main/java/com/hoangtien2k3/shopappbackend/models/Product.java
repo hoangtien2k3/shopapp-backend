@@ -3,6 +3,7 @@ package com.hoangtien2k3.shopappbackend.models;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "products")
+@EntityListeners(ProductListener.class)  // Envent-driven approach SPRING DATA JPA
 public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
