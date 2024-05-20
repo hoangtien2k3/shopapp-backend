@@ -38,7 +38,29 @@ spring:
 api:
   prefix: api/v1
 jwt:
-  expiration: 2592000 # 30 ngày: 30 * 24 * 60 * 60
+  expiration: 2592000 # 30 days: 30 * 24 * 60 * 60
   secretKey: "QpOD7PxEqUCWRB8BU6e+Hv29TQLUuG+0sxxSJZWAPGhrVVszWZU2hT5RhoQTvhgv"
 
-logging.level.org.springframework.security: DEBUG
+logging:
+  level:
+    org:
+      springframework.security: DEBUG
+
+# swagger-ui custom path
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /api-docs
+  show-actuator: true
+
+#health check
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      base-path: /api/v1/actuator
+      exposure:
+        include: "health, info"

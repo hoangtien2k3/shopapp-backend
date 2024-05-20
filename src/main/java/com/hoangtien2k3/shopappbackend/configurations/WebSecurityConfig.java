@@ -48,7 +48,24 @@ public class WebSecurityConfig {
                                 String.format("%s/products/**", apiPrefix),
                                 String.format("%s/products?*", apiPrefix),
                                 String.format("%s/orders/**", apiPrefix),
-                                String.format("%s/roles", apiPrefix)
+                                String.format("%s/roles", apiPrefix),
+                                String.format("%s/health-check/**", apiPrefix),
+                                String.format("%s/actuator/**", apiPrefix),
+                                String.format("%s/actuator/health", apiPrefix)
+                        ).permitAll()
+                        // swagger-ui
+                        .requestMatchers(
+                                String.format("%s/v2/api-docs", apiPrefix),
+                                String.format("%s/v3/api-docs", apiPrefix),
+                                String.format("%s/v3/api-docs/**", apiPrefix),
+                                String.format("%s/swagger-resources/**", apiPrefix),
+                                String.format("%s/swagger-ui.html", apiPrefix),
+                                String.format("%s/webjars/**", apiPrefix),
+                                String.format("%s/swagger-resources/configuration/ui", apiPrefix),
+                                String.format("%s/swagger-resources/configuration/security", apiPrefix),
+                                String.format("%s/swagger-ui.html/**", apiPrefix),
+                                String.format("%s/swagger-ui/**", apiPrefix),
+                                String.format("%s/swagger-ui.html/**", apiPrefix)
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 String.format("%s/users/register", apiPrefix),
