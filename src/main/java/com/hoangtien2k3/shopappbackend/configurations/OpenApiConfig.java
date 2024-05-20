@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
                         url = "hoangtien2k3.github.io/index.html"
                 ),
                 description = "Open Api documentation for Shopp App",
-                title = "Open Api Shopp App",
+                title = "Open Api Shopp App (E-Ecommerce)",
                 version = "0.0.1-SNAPSHOT",
                 license = @License(
                         name = "Apache License Version 2.0",

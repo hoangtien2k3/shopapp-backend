@@ -5,6 +5,7 @@ spring:
   application:
     name: shopapp-backend
 
+  #config mysql8
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
@@ -19,17 +20,26 @@ spring:
           dialect: org.hibernate.dialect.MySQL8Dialect
           format_sql: true
 
+  #config file and multipart file
   servlet:
     multipart:
       enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
 
+  # config multiple language (en, vi)
   messages:
     basename: i18n/messages
     encoding: UTF-8
     default-locale: en    # mặc định english
 
+  #flayway
+  flyway:
+    locations: classpath:/db/migration, classpath:/dev/db/migration
+    baseline-on-migrate: true # phiên bản baseline = 1, không thực hiện bất kỳ thay đổi nào trong DB
+    baseline-version: 0 # nó sẽ chạy V1__alter_some_tables.sql -> nghĩa là nó sẽ chạy cái version lớn hơn cái version hiện tại của chúng ta
+
+  #redis memory
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -55,8 +65,8 @@ springdoc:
     path: /swagger-ui.html
     tryItOutEnabled: true
     filter: true
-#  api-docs:
-#    path: /api-docs
+  #  api-docs:
+  #    path: /api-docs
   show-actuator: true
 
 #health check
