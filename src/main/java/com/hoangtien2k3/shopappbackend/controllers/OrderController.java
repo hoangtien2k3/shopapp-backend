@@ -4,7 +4,7 @@ import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
 import com.hoangtien2k3.shopappbackend.dtos.OrderDTO;
 import com.hoangtien2k3.shopappbackend.models.Order;
 import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
-import com.hoangtien2k3.shopappbackend.responses.order.OrderListResponse;
+import com.hoangtien2k3.shopappbackend.responses.order.OrderPageResponse;
 import com.hoangtien2k3.shopappbackend.responses.order.OrderResponse;
 import com.hoangtien2k3.shopappbackend.services.OrderService;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
@@ -110,7 +110,7 @@ public class OrderController extends TranslateMessages {
     */
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/get-order-by-keyword")
-    public ResponseEntity<OrderListResponse> getOrderByKeyword(
+    public ResponseEntity<OrderPageResponse> getOrderByKeyword(
             @RequestParam(defaultValue = "", required = false) String keyword,
             @RequestParam(defaultValue = "0", name = "page") int page,
             @RequestParam(defaultValue = "10", name = "limit") int limit
@@ -123,7 +123,7 @@ public class OrderController extends TranslateMessages {
         );
         Page<OrderResponse> orderPage = orderService.findByKeyword(keyword, pageRequest);
         List<OrderResponse> orders = orderPage.getContent();
-        return ResponseEntity.ok(OrderListResponse.builder()
+        return ResponseEntity.ok(OrderPageResponse.builder()
                 .orders(orders)
                 .pageNumber(page)
                 .totalElements(orderPage.getTotalElements())

@@ -17,4 +17,6 @@ public class UserLoginDTO {
 
     @NotBlank(message = MessageKeys.PASSWORD_REQUIRED)
     private String password;
+
+//    private int roleId; // quyền đăng nhập (1. user, 2. admin)
 }

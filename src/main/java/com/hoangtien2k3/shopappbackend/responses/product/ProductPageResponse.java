@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductListResponse {
+public class ProductPageResponse {
     List<ProductResponse> products;
     Integer pageNumber;
     Integer pageSize;

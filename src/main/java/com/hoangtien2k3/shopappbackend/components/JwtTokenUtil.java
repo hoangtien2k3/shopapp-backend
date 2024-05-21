@@ -1,6 +1,7 @@
 package com.hoangtien2k3.shopappbackend.components;
 
-import com.hoangtien2k3.shopappbackend.models.User;
+import com.hoangtien2k3.shopappbackend.models.Token;
+import com.hoangtien2k3.shopappbackend.repositories.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -23,6 +24,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class JwtTokenUtil {
 
+    private final TokenRepository tokenRepository;
     @Value("${jwt.expiration}")
     private int expiration; // lưu trong biến môi trường
 
@@ -42,7 +44,7 @@ public class JwtTokenUtil {
                     .setClaims(extractClaims)
                     .setSubject(userDetails.getUsername())
                     .setIssuedAt(new Date(System.currentTimeMillis()))
-                    .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
+                    .setExpiration(new Date(System.currentTimeMillis() + expiration))
                     .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                     .compact();
         } catch (Exception e) {
@@ -74,8 +76,15 @@ public class JwtTokenUtil {
 
     // if token is valid by checking if token is expired for current user
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractPhoneNumber(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpirated(token);
+        final String phoneNumber = extractPhoneNumber(token);
+        Token existingToken = tokenRepository.findByToken(token);
+        if (existingToken == null
+                || existingToken.isRevoked()
+                || !existingToken.getUser().isActive()
+        ) {
+            return false;
+        }
+        return phoneNumber.equals(userDetails.getUsername()) && !isTokenExpirated(token);
     }
 
     // extract user from token

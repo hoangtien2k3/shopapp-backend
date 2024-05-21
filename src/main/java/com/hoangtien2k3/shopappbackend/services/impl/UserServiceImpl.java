@@ -12,6 +12,7 @@ import com.hoangtien2k3.shopappbackend.models.Role;
 import com.hoangtien2k3.shopappbackend.models.Token;
 import com.hoangtien2k3.shopappbackend.models.User;
 import com.hoangtien2k3.shopappbackend.repositories.RoleRepository;
+import com.hoangtien2k3.shopappbackend.repositories.TokenRepository;
 import com.hoangtien2k3.shopappbackend.repositories.UserRepository;
 import com.hoangtien2k3.shopappbackend.responses.user.LoginResponse;
 import com.hoangtien2k3.shopappbackend.services.UserService;
@@ -19,6 +20,8 @@ import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import com.hoangtien2k3.shopappbackend.utils.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -35,7 +39,8 @@ public class UserServiceImpl extends TranslateMessages implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final TokenService refreshTokenService;
+    private final TokenRepository tokenRepository;
+    private final TokenServiceImpl refreshTokenService;
     private final JwtTokenUtil jwtTokenUtil;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -53,15 +58,16 @@ public class UserServiceImpl extends TranslateMessages implements UserService {
                     translate(MessageKeys.PHONE_NUMBER_EXISTED));
         }
         Role role = roleRepository.findById(userDTO.getRoleId()).
-                orElseThrow(() -> new DataNotFoundException("Role not found"));
-        if (role.getName().equalsIgnoreCase(RoleType.ADMIN)) {
-            throw new PermissionDenyException(
+                orElseThrow(() -> new DataNotFoundException(translate(MessageKeys.ROLE_NOT_FOUND)));
+        if (role.getName().equalsIgnoreCase(RoleType.ADMIN)) { // không có quyền tạo ADMIN
+            throw new BadCredentialsException(
                     translate(MessageKeys.CAN_NOT_CREATE_ACCOUNT_ROLE_ADMIN));
         }
 
         // convert userDTO -> user
         User newUser = userMapper.toUser(userDTO);
         newUser.setRole(role);
+        newUser.setActive(true); // mở tài khoản
 
         // kiểm tra xem nếu có accontId, không yêu cầu passowrd
         if (userDTO.getFacebookAccountId() == 0 && userDTO.getGoogleAccountId() == 0) {
@@ -74,7 +80,7 @@ public class UserServiceImpl extends TranslateMessages implements UserService {
     }
 
     @Override
-    public LoginResponse login(String phoneNumber, String password) throws DataNotFoundException {
+    public String login(String phoneNumber, String password) throws DataNotFoundException {
         // exists by user
         Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
         if (optionalUser.isEmpty()) {
@@ -91,23 +97,22 @@ public class UserServiceImpl extends TranslateMessages implements UserService {
                 );
             }
         }
+//        Optional<Role> optionalRole = roleRepository.findById(user.getRole().getId());
+//        if (optionalRole.isEmpty() || ) {}
+
+        // kiểm tra xem user đã được active hay chưa
+        if (!optionalUser.get().isActive()) {
+            throw new DataNotFoundException(translate(MessageKeys.USER_ID_LOCKED));
+        }
         // authenticated with java spring security
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                         user.getPhoneNumber(),
                         password,
-                        user.getAuthorities()
-                )
+                        user.getAuthorities())
         );
 
-        // generate token and refreshToken
-        var token = jwtTokenUtil.generateToken(user);
-        var refreshToken = refreshTokenService.createRefreshToken(token, user.getPhoneNumber());
-
-        return LoginResponse.builder()
-                .token(token)
-                .refreshToken(refreshToken.getRefreshToken())
-                .build();
+        // generate token
+        return jwtTokenUtil.generateToken(user);
     }
 
 
@@ -126,6 +131,37 @@ public class UserServiceImpl extends TranslateMessages implements UserService {
                 .token(jwtTokenUtil.generateToken(token.getUser()))
                 .refreshToken(token.getRefreshToken())
                 .build();
+    }
+
+    @Override
+    public Page<User> findAllUsers(String keyword, Pageable pageable) {
+        return userRepository.fillAll(keyword, pageable);
+    }
+
+    @Transactional
+    @Override
+    public void resetPassword(Long userId, String newPassword) throws Exception {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new DataNotFoundException(translate(MessageKeys.USER_NOT_FOUND))
+        );
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+
+        //reset token
+        List<Token> tokens = tokenRepository.findByUser(user);
+        tokenRepository.deleteAll(tokens);
+    }
+
+    // khoá tài khoản USER
+    @Transactional
+    @Override
+    public void blockOrEnable(Long userId, Boolean active) throws DataNotFoundException {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new DataNotFoundException(translate(MessageKeys.USER_NOT_FOUND))
+        );
+        user.setActive(active);
+        userRepository.save(user);
     }
 
     @Override

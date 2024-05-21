@@ -1,4 +1,4 @@
-package com.hoangtien2k3.shopappbackend.responses.order;
+package com.hoangtien2k3.shopappbackend.responses.user;
 
 import lombok.*;
 
@@ -9,8 +9,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderListResponse {
-    List<OrderResponse> orders;
+public class UserPageResponse {
+    List<UserResponse> users;
     Integer pageNumber;
     Integer pageSize;
     long totalElements;

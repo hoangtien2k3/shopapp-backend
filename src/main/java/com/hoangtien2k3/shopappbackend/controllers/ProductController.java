@@ -8,7 +8,7 @@ import com.hoangtien2k3.shopappbackend.dtos.ProductImageDTO;
 import com.hoangtien2k3.shopappbackend.models.Product;
 import com.hoangtien2k3.shopappbackend.models.ProductImage;
 import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
-import com.hoangtien2k3.shopappbackend.responses.product.ProductListResponse;
+import com.hoangtien2k3.shopappbackend.responses.product.ProductPageResponse;
 import com.hoangtien2k3.shopappbackend.responses.product.ProductResponse;
 import com.hoangtien2k3.shopappbackend.services.ProductRedisService;
 import com.hoangtien2k3.shopappbackend.services.ProductService;
@@ -20,7 +20,6 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -181,7 +180,7 @@ public class ProductController extends TranslateMessages {
     }
 
     @GetMapping("")
-    public ResponseEntity<ProductListResponse> getProduct(
+    public ResponseEntity<ProductPageResponse> getProduct(
             @RequestParam(defaultValue = "", name = "keyword") String keyword,
             @RequestParam(defaultValue = "0", name = "category_id") Long categoryId,
             @RequestParam(defaultValue = "0", name = "page") int page,
@@ -201,7 +200,7 @@ public class ProductController extends TranslateMessages {
             // Lưu sản phẩm vào Redis cache nếu không tìm thấy trong Redis
             productRedisService.saveAllProducts(products, keyword, categoryId, pageRequest, sortField, sortDirection);
 
-            return ResponseEntity.ok(ProductListResponse.builder()
+            return ResponseEntity.ok(ProductPageResponse.builder()
                     .products(products)
                     .pageNumber(page)
                     .totalElements(productPage.getTotalElements())
@@ -214,7 +213,7 @@ public class ProductController extends TranslateMessages {
         // Trường hợp tìm thấy sản phẩm trong Redis
         Page<ProductResponse> productPage = new PageImpl<>(
                 productResponses, pageRequest, productResponses.size());
-        return ResponseEntity.ok(ProductListResponse.builder()
+        return ResponseEntity.ok(ProductPageResponse.builder()
                 .products(productResponses)
                 .pageNumber(page)
                 .totalElements(productPage.getTotalElements())

@@ -36,12 +36,12 @@ ALTER TABLE users
 CREATE TABLE tokens
 (
     id              INT PRIMARY KEY AUTO_INCREMENT,
-    token           VARCHAR(255) UNIQUE NOT NULL,
-    refresh_token   VARCHAR(500)        NOT NULL,
-    token_type      VARCHAR(50)         NOT NULL,
-    expiration_time TIMESTAMP           NOT NULL,
-    revoked         TINYINT(1)          NOT NULL,
-    expired         TINYINT(1)          NOT NULL,
+    token           VARCHAR(255) NOT NULL,
+    refresh_token   VARCHAR(500) NOT NULL,
+    token_type      VARCHAR(50)  NOT NULL,
+    expiration_time TIMESTAMP    NOT NULL,
+    revoked         TINYINT(1)   NOT NULL,
+    expired         TINYINT(1)   NOT NULL,
     user_id         INT,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );

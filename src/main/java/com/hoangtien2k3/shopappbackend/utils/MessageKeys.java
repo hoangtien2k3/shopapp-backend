@@ -37,6 +37,10 @@ public class MessageKeys {
 
     public static final String PRODUCT_NOT_FOUND = "product.valid.not_found";
     public static final String CATEGORY_NOT_FOUND = "category.valid.not_found";
+    public static final String ROLE_NOT_FOUND = "role.valid.not_found";
+    public static final String USER_ID_LOCKED = "user.is.lock";
+    public static final String USER_ID_UNLOCKED = "user.is.unlock";
+    public static final String REFRESH_TOKEN_SUCCESS = "refresh.token.success";
 
     // token
     public static final String ERROR_REFRESH_TOKEN = "user.refresh_token.failed";
@@ -51,6 +55,9 @@ public class MessageKeys {
     public static final String MESSAGE_UPDATE_GET = "message.update.success";
     public static final String MESSAGE_DELETE_SUCCESS = "message.delete.success";
     public static final String MESSAGE_DELETE_FAILED = "message.delete.failed";
+
+    public static final String RESET_PASSWORD_SUCCESS = "reset.password.success";
+    public static final String RESET_PASSWORD_FAILED = "reset.password.failed";
 
     public static final String CREATE_ORDER_SUCCESS = "order.create.successfully";
     public static final String CREATE_ORDER_FAILED = "order.create.failed";

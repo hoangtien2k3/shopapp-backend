@@ -51,7 +51,8 @@ domain:
   protocol: http://localhost:${server.port}
 
 jwt:
-  expiration: 2592000 # 30 days: 30 * 24 * 60 * 60
+  expiration: 2592000 # 30 days = 30 * 24 * 60 * 60
+  expiration-refresh-token: 5184000 # 60 days = 60 * 24 * 60 * 60
   secretKey: "QpOD7PxEqUCWRB8BU6e+Hv29TQLUuG+0sxxSJZWAPGhrVVszWZU2hT5RhoQTvhgv"
 
 logging:
