@@ -18,6 +18,8 @@
 		<projectlombok-lombok.version>1.18.30</projectlombok-lombok.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+		<sonar.organization>hoangtien2k3</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 	<dependencies>
 		<dependency>

@@ -3,6 +3,15 @@
 # Shopp App - Backend 
 Backend system provides restful API for web or mobile.
 
+[![CircleCI](https://circleci.com/gh/piomin/sample-spring-microservices-new.svg?style=svg)](https://sonarcloud.io/project/issues?resolved=false&id=hoangtien2k3_shopapp-backend)
+
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-black.svg)](https://sonarcloud.io/project/overview?id=hoangtien2k3_shopapp-backend)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=piomin_sample-spring-microservices-new&metric=bugs)](https://sonarcloud.io/issues?resolved=false)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=piomin_sample-spring-microservices-new&metric=coverage)]()
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=piomin_sample-spring-microservices-new&metric=ncloc)]()
+
+In this project I'm demonstrating you the most interesting features of [Spring Cloud Project](https://spring.io/projects/spring-cloud) for building microservice-based architecture.
+
 ## Introduction 💗💎❤️
 
 Welcome to the backend component of `shopp-app backend (e-ecommerce)`. This Java Spring boot backend is designed to
