@@ -1,14 +1,14 @@
-![](logo_images.png)
+![](images/logo_images.png)
 
 # Shopp App - Backend 
 Backend system provides restful API for web or mobile.
 
-[![CircleCI](https://circleci.com/gh/piomin/sample-spring-microservices-new.svg?style=svg)](https://sonarcloud.io/project/issues?resolved=false&id=hoangtien2k3_shopapp-backend)
+[![CircleCI](https://circleci.com/gh/piomin/sample-spring-microservices-new.svg?style=svg)](https://app.circleci.com/pipelines/circleci/WpJpWzbAX4Dvhh2AjRnJmX/X6V4xLymFHgq4YEPN1Aiia)
 
 [![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-black.svg)](https://sonarcloud.io/project/overview?id=hoangtien2k3_shopapp-backend)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=piomin_sample-spring-microservices-new&metric=bugs)](https://sonarcloud.io/issues?resolved=false)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=piomin_sample-spring-microservices-new&metric=coverage)]()
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=piomin_sample-spring-microservices-new&metric=ncloc)]()
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=hoangtien2k3_shopapp-backend&metric=bugs)](https://sonarcloud.io/project/overview?id=hoangtien2k3_shopapp-backend)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=hoangtien2k3_shopapp-backend&metric=coverage)](https://sonarcloud.io/project/overview?id=hoangtien2k3_shopapp-backend)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=hoangtien2k3_shopapp-backend&metric=ncloc)](https://sonarcloud.io/project/overview?id=hoangtien2k3_shopapp-backend)
 
 In this project I'm demonstrating you the most interesting features of [Spring Cloud Project](https://spring.io/projects/spring-cloud) for building microservice-based architecture.
 
@@ -85,13 +85,13 @@ Follow these steps to set up and run the backend:
 - `Cache`: Using redis cache db
 
 ## Databaes Mysql8
-![mysql-8](database_diagram.jpg)
+![mysql-8](images/database_diagram.jpg)
 
 ## Swagger-ui
 
 [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
-![swagger-ui](swagger-ui.jpg)
+![swagger-ui](images/swagger-ui.jpg)
 
 ## API Documentation
 
