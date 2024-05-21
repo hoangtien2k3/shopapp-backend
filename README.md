@@ -1,7 +1,7 @@
 ![](logo_images.png)
 
 # Shopp App - Backend 
-[Backend system provides restful API for web or mobile.]()
+Backend system provides restful API for web or mobile.
 
 ## Introduction 💗💎❤️
 
@@ -22,6 +22,8 @@ handle the server-side logic and data processing for my application.
 - Restfull API
 - PostMan Testing API and Client.
 - Send message and receiver using Kafka server, Zookeeper, Broker.
+- Redis cache database 
+- Flyway migration database version 
 
 ## ✅Features
 
@@ -77,6 +79,9 @@ Follow these steps to set up and run the backend:
 ![mysql-8](database_diagram.jpg)
 
 ## Swagger-ui
+
+[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
 ![swagger-ui](swagger-ui.jpg)
 
 ## API Documentation
