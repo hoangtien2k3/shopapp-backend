@@ -16,7 +16,7 @@ services:
       - shopapp-network
 
   redis-container:
-    image: docker.io/redis:7.2.3
+    image: docker.io/redis:7.2.5
     container_name: redis-container
     restart: always
     ports:
