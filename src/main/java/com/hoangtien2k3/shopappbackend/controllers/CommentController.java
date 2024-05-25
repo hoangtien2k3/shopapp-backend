@@ -37,7 +37,7 @@ public class CommentController extends TranslateMessages {
         }
 
         return ResponseEntity.ok(ApiResponse.builder()
-                        .payload(commentResponses)
+                .payload(commentResponses)
                 .build());
     }
 
@@ -66,9 +66,10 @@ public class CommentController extends TranslateMessages {
     public ResponseEntity<?> insertComments(@Valid @RequestBody CommentDTO commentDTO,
                                             Authentication authentication) {
         try {
-            commentService.insertComment(commentDTO);
+            Comment newComment = commentService.insertComment(commentDTO);
             return ResponseEntity.ok(ApiResponse.builder().success(true)
                     .message(translate(MessageKeys.COMMENT_INSERT_SUCCESS))
+                    .payload(newComment)
                     .build());
         } catch (Exception e) {
             // handle and log exception

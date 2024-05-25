@@ -56,6 +56,7 @@ public class WebSecurityConfig {
                                 String.format("%s/roles/**", apiPrefix),
                                 String.format("%s/health_check/**", apiPrefix),
                                 String.format("%s/actuator/**", apiPrefix),
+                                String.format("%s/comments/**", apiPrefix),
                                 // sagger-ui
                                 "/v2/api-docs",
                                 "/v3/api-docs",

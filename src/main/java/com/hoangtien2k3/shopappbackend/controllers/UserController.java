@@ -84,7 +84,7 @@ public class UserController extends TranslateMessages {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> userLoginDTO(
-            @RequestBody @Valid UserLoginDTO userLoginDTO,
+            @Valid @RequestBody UserLoginDTO userLoginDTO,
             HttpServletRequest request,
             BindingResult bindingResult
     ) {
