@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hoangtien2k3.shopappbackend.models.Product;
 import com.hoangtien2k3.shopappbackend.models.ProductImage;
 import com.hoangtien2k3.shopappbackend.responses.BaseResponse;
+import com.hoangtien2k3.shopappbackend.responses.comment.CommentResponse;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -19,9 +20,10 @@ public class ProductResponse extends BaseResponse {
     private Float price;
     private String thumbnail;
     private String description;
-
     @JsonProperty("product_images")
     private List<ProductImage> productImages = new ArrayList<>();
+    @JsonProperty("comments")
+    private List<CommentResponse> comments = new ArrayList<>();
 
     @JsonProperty("category_id")
     private Long categoryId;
@@ -33,7 +35,11 @@ public class ProductResponse extends BaseResponse {
                 .thumbnail(product.getThumbnail())
                 .description(product.getDescription())
                 .categoryId(product.getCategory().getId())
-//                .productImage(product.getProductImages())
+                .productImages(product.getProductImages())
+                .comments(product.getComments()
+                        .stream()
+                        .map(CommentResponse::fromComment)
+                        .toList())
                 .build();
         productResponse.setCreatedAt(product.getCreatedAt());
         productResponse.setUpdatedAt(product.getUpdatedAt());
