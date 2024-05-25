@@ -34,7 +34,7 @@ public class FlywayConfig {
                 .baselineVersion("0")
                 .load();
         flyway.migrate(); // run sql file: V1__alter_some_tables.sql
-        System.out.printf("migration complete...");
+//        System.out.printf("migration complete...");
         return flyway;
     }
 
