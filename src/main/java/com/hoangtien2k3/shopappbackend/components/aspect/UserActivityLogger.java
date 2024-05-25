@@ -23,6 +23,12 @@ public class UserActivityLogger {
         String methodName = joinPoint.getSignature().getName();
         String remoteAddress = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
                 .getRequest().getRemoteAddr();
+
+
+        // log info Ip
+        log.info("[{}] [{}] [{}]", methodName, remoteAddress, joinPoint.getArgs());
+
+
         log.info("User activity started: {}, IP address: {}", methodName, remoteAddress);
         // thực hiện method gốc
         Object result = joinPoint.proceed();

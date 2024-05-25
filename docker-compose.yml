@@ -10,17 +10,17 @@ services:
       MYSQL_ROOT_PASSWORD: 12042003
     ports:
       - "3307:3306"
-    volumes:
-      - ./sql/shopapp.sql:/docker-entrypoint-initdb.d/init-script.sql
+    # volumes:
+    #   - ./sql/shopapp.sql:/docker-entrypoint-initdb.d/init-script.sql
     networks:
       - shopapp-network
 
   redis-container:
-    image: docker.io/redis:7.2.5
     container_name: redis-container
+    image: redis:7.2.3
     restart: always
     ports:
-      - "6379:6379" # post mapping redis
+      - "6379:6379" # port mapping redis
     volumes:
       - ./redis-data:/data  # mount a volume
     networks:
@@ -34,19 +34,139 @@ services:
     ports:
       - "8099:8088"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql8-container:3306/shopapp?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql8-container:3307/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       MYSQL_ROOT_PASSWORD: 12042003
+      REDIS_HOST: redis-container
+      REDIS_PORT: 6379
+      # KAFKA_BROKER_SERVER: kafka-broker-01
+      # KAFKA_BROKER_PORT: 19092
     depends_on:
       - mysql8-container
     networks:
       - shopapp-network
     healthcheck:
-      test: ["CMD-SHELL", "curl --fail http://shopapp-spring-container:8088/healthcheck/health || exit 1"]
+      # test: [ "CMD-SHELL", "curl --fail http://localhost:8080/health_check/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl --fail http://localhost:8080/api/v1/actuator/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 20s
 
+
+  zookeeper-01:
+    image: confluentinc/cp-zookeeper:7.5.3
+    hostname: zookeeper-01
+    container_name: zookeeper-01
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zookeeper-01:2888:3888;zookeeper-02:2888:3888;zookeeper-03:2888:3888
+    networks:
+      - shopapp-network
+
+  zookeeper-02:
+    image: confluentinc/cp-zookeeper:7.5.3
+    hostname: zookeeper-02
+    container_name: zookeeper-02
+    ports:
+      - "2182:2182"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2182
+      ZOOKEEPER_SERVER_ID: 2
+      ZOOKEEPER_SERVERS: zookeeper-01:2888:3888;zookeeper-02:2888:3888;zookeeper-03:2888:3888
+    networks:
+      - shopapp-network
+
+  zookeeper-03:
+    image: confluentinc/cp-zookeeper:7.5.3
+    hostname: zookeeper-03
+    container_name: zookeeper-03
+    ports:
+      - "2183:2183"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2183
+      ZOOKEEPER_SERVER_ID: 3
+      ZOOKEEPER_SERVERS: zookeeper-01:2888:3888;zookeeper-02:2888:3888;zookeeper-03:2888:3888
+    networks:
+      - shopapp-network
+
+  kafka-broker-01:
+    image: confluentinc/cp-kafka:7.5.3
+    hostname: kafka-broker-01
+    container_name: kafka-broker-01
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "9999:9999"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-broker-01:19092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092,DOCKER://kafka-broker-01:29092
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,EXTERNAL://0.0.0.0:9092,DOCKER://0.0.0.0:29092
+      KAFKA_LISTENERS_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper-01:2181,zookeeper-02:2181,zookeeper-03:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+      # Thêm cấu hình bảo mật cho listener INTERNAL
+      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT
+    networks:
+      - shopapp-network
+    depends_on:
+      - zookeeper-01
+      - zookeeper-02
+      - zookeeper-03
+
+
+  kafka-broker-02:
+    image: confluentinc/cp-kafka:7.5.3
+    hostname: kafka-broker-02
+    container_name: kafka-broker-02
+    ports:
+      - "9093:9093"
+      - "29093:29093"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-broker-02:19093,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9093,DOCKER://kafka-broker-02:29093
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19093,EXTERNAL://0.0.0.0:9093,DOCKER://0.0.0.0:29093
+      KAFKA_LISTENERS_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper-01:2181,zookeeper-02:2181,zookeeper-03:2181"
+      KAFKA_BROKER_ID: 2
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9998
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+      # Thêm cấu hình bảo mật cho listener INTERNAL
+      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT
+    networks:
+      - shopapp-network
+    depends_on:
+      - zookeeper-01
+      - zookeeper-02
+      - zookeeper-03
+
 networks:
   shopapp-network:
+    name: shopapp-network
     driver: bridge
+
+
+  # docker-compose -f ./kafka-deployment.yml rm -s -f zookeeper-01
+
+  # docker-compose -f ./kafka-deployment.yml up -d zookeeper-01
+  # docker-compose -f ./kafka-deployment.yml up -d zookeeper-02
+  # docker-compose -f ./kafka-deployment.yml up -d zookeeper-03
+
+  # docker-compose -f ./kafka-deployment.yml up -d kafka-broker-01
+  # docker-compose -f ./kafka-deployment.yml up -d kafka-broker-02
