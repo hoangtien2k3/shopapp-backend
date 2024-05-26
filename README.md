@@ -1,6 +1,7 @@
 ![](images/logo_images.png)
 
-# Shopp App - Backend 
+# Shopp App - Backend
+
 Backend system provides restful API for web or mobile.
 
 [![CircleCI](https://circleci.com/gh/piomin/sample-spring-microservices-new.svg?style=svg)](https://app.circleci.com/pipelines/circleci/WpJpWzbAX4Dvhh2AjRnJmX/X6V4xLymFHgq4YEPN1Aiia)
@@ -10,7 +11,8 @@ Backend system provides restful API for web or mobile.
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=hoangtien2k3_shopapp-backend&metric=coverage)](https://sonarcloud.io/project/overview?id=hoangtien2k3_shopapp-backend)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=hoangtien2k3_shopapp-backend&metric=ncloc)](https://sonarcloud.io/project/overview?id=hoangtien2k3_shopapp-backend)
 
-In this project I'm demonstrating you the most interesting features of [Spring Cloud Project](https://spring.io/projects/spring-cloud) for building microservice-based architecture.
+In this project I'm demonstrating you the most interesting features
+of [Spring Cloud Project](https://spring.io/projects/spring-cloud) for building microservice-based architecture.
 
 ## Introduction 💗💎❤️
 
@@ -31,8 +33,8 @@ handle the server-side logic and data processing for my application.
 - Restfull API
 - PostMan Testing API and Client.
 - Send message and receiver using Kafka server, Zookeeper, Broker.
-- Redis cache database 
-- Flyway migration database version 
+- Redis cache database
+- Flyway migration database version
 
 ## ✅Features
 
@@ -59,21 +61,44 @@ Follow these steps to set up and run the backend:
 ```bash
   # Using Maven
   mvn clean install
-  
-  # Using Gradle
-  gradle build
 ```
 
 #### 3. Configure the database:
 
 - Update `application.yml` with your mysql database connection details.
 
-#### 4. Run the application:
+#### 4. Run Docker (docker-compose)
+
+```bash
+  cd shopapp-backend
+  
+  #run docker-compose
+  docker-compose up -d
+```
+
+#### 5. Create [DATABASE](https://github.com/hoangtien2k3/shopapp-backend/blob/master/src/main/resources/database.sql) `shopapp` and add data demo: [DATA-DEMO](https://github.com/hoangtien2k3/shopapp-backend/blob/master/src/main/resources/data_demo.sql) in database Docker
+
+#### 6. Run the application:
 
 ```bash
   # Using Maven
   mvn spring-boot:run
 ```
+
+## Databaes Mysql8
+
+![mysql-8](images/database_diagram.jpg)
+
+## Swagger-ui
+
+[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+![swagger-ui](images/swagger-ui.jpg)
+
+## PostMan Client
+
+![postman-project](images/postman_project.jpg)
+
 
 ## Technologies Used
 
@@ -83,15 +108,6 @@ Follow these steps to set up and run the backend:
 - `Database`: Choose and specify the database system used (e.g., MySQL8).
 - `Other Dependencies`: List any additional dependencies or libraries used.
 - `Cache`: Using redis cache db
-
-## Databaes Mysql8
-![mysql-8](images/database_diagram.jpg)
-
-## Swagger-ui
-
-[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
-
-![swagger-ui](images/swagger-ui.jpg)
 
 ## API Documentation
 
