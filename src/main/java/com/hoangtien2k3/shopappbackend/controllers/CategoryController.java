@@ -1,14 +1,17 @@
 package com.hoangtien2k3.shopappbackend.controllers;
 
 import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
+import com.hoangtien2k3.shopappbackend.components.converters.CategoryMessageConverter;
 import com.hoangtien2k3.shopappbackend.dtos.CategoryDTO;
 import com.hoangtien2k3.shopappbackend.models.Category;
 import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
 import com.hoangtien2k3.shopappbackend.services.CategoryService;
+import com.hoangtien2k3.shopappbackend.utils.Const;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -16,14 +19,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-//@Validated
-// dependency injection
 @RestController
 @RequestMapping("${api.prefix}/categories")
 @RequiredArgsConstructor
 public class CategoryController extends TranslateMessages {
 
     private final CategoryService categoryService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("")
@@ -43,10 +45,16 @@ public class CategoryController extends TranslateMessages {
                                         .toList()).build()
                 );
             }
+            Category newCategory = categoryService.createCategory(categoryDTO);
 
-            categoryService.createCategory(categoryDTO);
+            // send kafka category
+            this.kafkaTemplate.send(Const.KAFKA_TOPIC_INSERT_CATEGORY, newCategory); // producer
+            this.kafkaTemplate.setMessageConverter(new CategoryMessageConverter());
+
             return ResponseEntity.ok(ApiResponse.builder().success(true)
-                    .message(translate(MessageKeys.CREATE_CATEGORIES_SUCCESS)).build());
+                    .message(translate(MessageKeys.CREATE_CATEGORIES_SUCCESS))
+                    .payload(newCategory)
+                    .build());
         } catch (Exception e) {
             return ResponseEntity.ok(ApiResponse.builder()
                     .error(e.getMessage())
@@ -54,24 +62,26 @@ public class CategoryController extends TranslateMessages {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
+    // ai cũng có thể lấy ra danh sách các danh mục sản phẩm
     @GetMapping("")
-    public ResponseEntity<?> getAllCategories() {
+    public ResponseEntity<ApiResponse<?>> getAllCategories() {
         List<Category> categories = categoryService.getAllCategories();
+        /*kafka get all category*/
+        this.kafkaTemplate.send(Const.KAFKA_TOPIC_GET_ALL_CATEGORY, categories);
         return ResponseEntity.ok(ApiResponse.builder()
-                        .success(true)
-                        .payload(categories)
+                .success(true)
+                .payload(categories)
                 .build());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCategories(@PathVariable("id") Long id,
-                                                   @RequestBody CategoryDTO categoryDTO) {
+                                              @RequestBody CategoryDTO categoryDTO) {
         Category category = categoryService.updateCategory(id, categoryDTO);
         return ResponseEntity.ok(ApiResponse.builder().success(true)
-                        .message(translate(MessageKeys.UPDATE_CATEGORIES_SUCCESS))
-                        .payload(category)
+                .message(translate(MessageKeys.UPDATE_CATEGORIES_SUCCESS))
+                .payload(category)
                 .build());
     }
 

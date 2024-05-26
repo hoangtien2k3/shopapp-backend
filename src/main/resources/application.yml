@@ -36,14 +36,25 @@ spring:
   #flayway
   flyway:
     locations: classpath:/db/migration, classpath:/dev/db/migration
-    baseline-on-migrate: true # phiên bản baseline = 1, không thực hiện bất kỳ thay đổi nào trong DB
-    baseline-version: 0 # nó sẽ chạy V1__alter_some_tables.sql -> nghĩa là nó sẽ chạy cái version lớn hơn cái version hiện tại của chúng ta
+    baseline-on-migrate: true   # phiên bản baseline = 1, không thực hiện bất kỳ thay đổi nào trong DB
+    baseline-version: 0         # nó sẽ chạy V1__alter_some_tables.sql -> nghĩa là nó sẽ chạy cái version lớn hơn cái version hiện tại của chúng ta
 
   #redis memory
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+
+  # kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        "[spring.json.type.mapping]": "category:com.hoangtien2k3.shopappbackend.models.Category"
+    consumer:
+      group-id: groupA
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 api:
   prefix: /api/v1

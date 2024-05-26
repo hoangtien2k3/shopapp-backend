@@ -1,6 +1,7 @@
 version: '3.7'
 
 services:
+  # mysql
   mysql8-container:
     container_name: mysql8-container
     image: mysql:8.2.0
@@ -15,6 +16,8 @@ services:
     networks:
       - shopapp-network
 
+
+  # redis
   redis-container:
     container_name: redis-container
     image: redis:7.2.3
@@ -26,33 +29,8 @@ services:
     networks:
       - shopapp-network
 
-  shopapp-spring-container:
-    container_name: shopapp-spring-container
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8099:8088"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql8-container:3307/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-      MYSQL_ROOT_PASSWORD: 12042003
-      REDIS_HOST: redis-container
-      REDIS_PORT: 6379
-      # KAFKA_BROKER_SERVER: kafka-broker-01
-      # KAFKA_BROKER_PORT: 19092
-    depends_on:
-      - mysql8-container
-    networks:
-      - shopapp-network
-    healthcheck:
-      # test: [ "CMD-SHELL", "curl --fail http://localhost:8080/health_check/health || exit 1" ]
-      test: [ "CMD-SHELL", "curl --fail http://localhost:8080/api/v1/actuator/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
 
-
+  # zookeeper-01
   zookeeper-01:
     image: confluentinc/cp-zookeeper:7.5.3
     hostname: zookeeper-01
@@ -66,6 +44,8 @@ services:
     networks:
       - shopapp-network
 
+
+  # zookeeper-02
   zookeeper-02:
     image: confluentinc/cp-zookeeper:7.5.3
     hostname: zookeeper-02
@@ -79,6 +59,8 @@ services:
     networks:
       - shopapp-network
 
+
+  # zookeeper-03
   zookeeper-03:
     image: confluentinc/cp-zookeeper:7.5.3
     hostname: zookeeper-03
@@ -92,81 +74,87 @@ services:
     networks:
       - shopapp-network
 
+
+  # kafka-broker-01
   kafka-broker-01:
     image: confluentinc/cp-kafka:7.5.3
     hostname: kafka-broker-01
     container_name: kafka-broker-01
+    networks:
+      - shopapp-network
+    depends_on:
+      - zookeeper-01
+      - zookeeper-02
+      - zookeeper-03
     ports:
       - "9092:9092"
       - "29092:29092"
       - "9999:9999"
     environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper-01:2181,zookeeper-02:2182,zookeeper-03:2183"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-broker-01:19092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092,DOCKER://kafka-broker-01:29092
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,EXTERNAL://0.0.0.0:9092,DOCKER://0.0.0.0:29092
-      KAFKA_LISTENERS_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper-01:2181,zookeeper-02:2181,zookeeper-03:2181"
-      KAFKA_BROKER_ID: 1
       KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 9999
       KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka-broker-01:29092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
       KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
-      # Thêm cấu hình bảo mật cho listener INTERNAL
-      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT
-    networks:
-      - shopapp-network
-    depends_on:
-      - zookeeper-01
-      - zookeeper-02
-      - zookeeper-03
 
 
-  kafka-broker-02:
-    image: confluentinc/cp-kafka:7.5.3
-    hostname: kafka-broker-02
-    container_name: kafka-broker-02
+  # shopapp connect
+  shopapp-spring-container:
+    container_name: shopapp-spring-container
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "9093:9093"
-      - "29093:29093"
+      - "8099:8080"
     environment:
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-broker-02:19093,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9093,DOCKER://kafka-broker-02:29093
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19093,EXTERNAL://0.0.0.0:9093,DOCKER://0.0.0.0:29093
-      KAFKA_LISTENERS_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper-01:2181,zookeeper-02:2181,zookeeper-03:2181"
-      KAFKA_BROKER_ID: 2
-      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_JMX_PORT: 9998
-      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
-      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
-      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
-      # Thêm cấu hình bảo mật cho listener INTERNAL
-      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql8-container:3307/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      MYSQL_ROOT_PASSWORD: 12042003
+      REDIS_HOST: redis-container
+      REDIS_PORT: 6379
+      KAFKA_BROKER_SERVER: kafka-broker-01
+      KAFKA_BROKER_PORT: 19092
+    depends_on:
+      - mysql8-container
+      - redis-container
+      - kafka-broker-01
     networks:
       - shopapp-network
-    depends_on:
-      - zookeeper-01
-      - zookeeper-02
-      - zookeeper-03
+    healthcheck:
+      # test: [ "CMD-SHELL", "curl --fail http://localhost:8080/health_check/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl --fail http://localhost:8080/api/v1/actuator/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
+# network
 networks:
   shopapp-network:
     name: shopapp-network
     driver: bridge
 
 
-  # docker-compose -f ./kafka-deployment.yml rm -s -f zookeeper-01
 
-  # docker-compose -f ./kafka-deployment.yml up -d zookeeper-01
-  # docker-compose -f ./kafka-deployment.yml up -d zookeeper-02
-  # docker-compose -f ./kafka-deployment.yml up -d zookeeper-03
+# RUN ZOOKEEPER
+# docker-compose up -d zookeeper-01
+# docker-compose up -d zookeeper-02
+# docker-compose up -d zookeeper-03
 
-  # docker-compose -f ./kafka-deployment.yml up -d kafka-broker-01
-  # docker-compose -f ./kafka-deployment.yml up -d kafka-broker-02
+# RUN KAFKA-BROKER
+# docker-compose up -d kafka-broker-01
