@@ -8,7 +8,7 @@ spring:
   #config mysql8
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: root
     password: ${MYSQL_ROOT_PASSWORD:12042003}
     jpa:

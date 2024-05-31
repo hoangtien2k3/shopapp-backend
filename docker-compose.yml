@@ -11,6 +11,10 @@ services:
       MYSQL_ROOT_PASSWORD: 12042003
     ports:
       - "3307:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
     # volumes:
     #   - ./sql/shopapp.sql:/docker-entrypoint-initdb.d/init-script.sql
     networks:
@@ -87,7 +91,7 @@ services:
       - zookeeper-02
       - zookeeper-03
     ports:
-      - "9092:9092"
+      - "9093:9093"
       - "29092:29092"
       - "9999:9999"
     environment:
@@ -128,7 +132,7 @@ services:
       REDIS_HOST: redis-container
       REDIS_PORT: 6379
       KAFKA_BROKER_SERVER: kafka-broker-01
-      KAFKA_BROKER_PORT: 19092
+      KAFKA_BROKER_PORT: 29092
     depends_on:
       - mysql8-container
       - redis-container
