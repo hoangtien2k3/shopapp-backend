@@ -76,7 +76,7 @@ Follow these steps to set up and run the backend:
   docker-compose up -d
 ```
 
-#### 5. Create [DATABASE](https://github.com/hoangtien2k3/shopapp-backend/blob/master/src/main/resources/database.sql) `shopapp` and add data demo: [DATA-DEMO](https://github.com/hoangtien2k3/shopapp-backend/blob/master/src/main/resources/data_demo.sql) in database Docker
+#### 5. Create [DATABASE](https://github.com/hoangtien2k3/shopapp-backend/blob/master/src/main/resources/database.sql) `shopapp` and add data demo: [DATA-DEMO](https://github.com/hoangtien2k3/shopapp-backend/blob/master/src/main/resources/data_sql.sql) in database Docker
 
 #### 6. Run the application:
 
