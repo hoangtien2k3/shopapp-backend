@@ -4,13 +4,13 @@ services:
   # mysql
   mysql8-container:
     container_name: mysql8-container
-    image: mysql:8.2.0
+    image: mysql:${MYSQL_TAG}
     restart: always
     environment:
-      MYSQL_DATABASE: shopapp
-      MYSQL_ROOT_PASSWORD: 12042003
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "3307:3306"
+      - "${MYSQL_PORT}:3306"
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 20s
@@ -20,27 +20,39 @@ services:
     networks:
       - shopapp-network
 
-
   # redis
   redis-container:
     container_name: redis-container
-    image: redis:7.2.3
+    image: redis:${REDIS_TAG}
     restart: always
     ports:
-      - "6379:6379" # port mapping redis
+      - "${REDIS_PORT}:6379"
     volumes:
-      - ./redis-data:/data  # mount a volume
+      - ./redis-data:/data
     networks:
       - shopapp-network
 
+  # neo4j
+  neo4j-container:
+    container_name: neo4j-container
+    image: neo4j:${NEO4J_TAG}
+    ports:
+      - "${NEO4J_HTTP_PORT}:7474"
+      - "${NEO4J_BOLT_PORT}:7687"
+    environment:
+      - NEO4J_AUTH=${NEO4J_AUTH}
+    volumes:
+      - ./neo4j:/data
+    networks:
+      - shopapp-network
 
   # zookeeper-01
   zookeeper-01:
-    image: confluentinc/cp-zookeeper:7.5.3
+    image: confluentinc/cp-zookeeper:${ZOOKEEPER_TAG}
     hostname: zookeeper-01
     container_name: zookeeper-01
     ports:
-      - "2181:2181"
+      - "${ZOOKEEPER_01_PORT}:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_SERVER_ID: 1
@@ -48,14 +60,13 @@ services:
     networks:
       - shopapp-network
 
-
   # zookeeper-02
   zookeeper-02:
-    image: confluentinc/cp-zookeeper:7.5.3
+    image: confluentinc/cp-zookeeper:${ZOOKEEPER_TAG}
     hostname: zookeeper-02
     container_name: zookeeper-02
     ports:
-      - "2182:2182"
+      - "${ZOOKEEPER_02_PORT}:2182"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2182
       ZOOKEEPER_SERVER_ID: 2
@@ -63,14 +74,13 @@ services:
     networks:
       - shopapp-network
 
-
   # zookeeper-03
   zookeeper-03:
-    image: confluentinc/cp-zookeeper:7.5.3
+    image: confluentinc/cp-zookeeper:${ZOOKEEPER_TAG}
     hostname: zookeeper-03
     container_name: zookeeper-03
     ports:
-      - "2183:2183"
+      - "${ZOOKEEPER_03_PORT}:2183"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2183
       ZOOKEEPER_SERVER_ID: 3
@@ -78,10 +88,9 @@ services:
     networks:
       - shopapp-network
 
-
   # kafka-broker-01
   kafka-broker-01:
-    image: confluentinc/cp-kafka:7.5.3
+    image: confluentinc/cp-kafka:${KAFKA_TAG}
     hostname: kafka-broker-01
     container_name: kafka-broker-01
     networks:
@@ -91,9 +100,9 @@ services:
       - zookeeper-02
       - zookeeper-03
     ports:
-      - "9093:9093"
-      - "29092:29092"
-      - "9999:9999"
+      - "${KAFKA_PORT_01}:${KAFKA_PORT_01}"
+      - "${KAFKA_PORT_02}:${KAFKA_PORT_02}"
+      - "${KAFKA_PORT_03}:${KAFKA_PORT_03}"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper-01:2181,zookeeper-02:2182,zookeeper-03:2183"
@@ -117,7 +126,6 @@ services:
       KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
 
-
   # shopapp connect
   shopapp-spring-container:
     container_name: shopapp-spring-container
@@ -130,7 +138,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql8-container:3307/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       MYSQL_ROOT_PASSWORD: 12042003
       REDIS_HOST: redis-container
-      REDIS_PORT: 6379
+      REDIS_PORT: ${REDIS_PORT}
       KAFKA_BROKER_SERVER: kafka-broker-01
       KAFKA_BROKER_PORT: 29092
     depends_on:
@@ -153,12 +161,13 @@ networks:
     name: shopapp-network
     driver: bridge
 
-
-
-# RUN ZOOKEEPER
+# RUN DOCKER
+# docker-compose up -d
+# docker-compose up -d mysql8-container
+# docker-compose up -d redis-container
+# docker-compose up -d neo4j-container
 # docker-compose up -d zookeeper-01
 # docker-compose up -d zookeeper-02
 # docker-compose up -d zookeeper-03
-
-# RUN KAFKA-BROKER
 # docker-compose up -d kafka-broker-01
+# docker-compose up -d shopapp-spring-container
