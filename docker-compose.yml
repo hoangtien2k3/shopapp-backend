@@ -100,9 +100,9 @@ services:
       - zookeeper-02
       - zookeeper-03
     ports:
-      - "${KAFKA_PORT_01}:${KAFKA_PORT_01}"
-      - "${KAFKA_PORT_02}:${KAFKA_PORT_02}"
-      - "${KAFKA_PORT_03}:${KAFKA_PORT_03}"
+      - "${KAFKA_PORT_01}:9093"
+      - "${KAFKA_PORT_02}:29092"
+      - "${KAFKA_PORT_03}:9999"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper-01:2181,zookeeper-02:2182,zookeeper-03:2183"
