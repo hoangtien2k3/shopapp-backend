@@ -39,11 +39,19 @@ spring:
     baseline-on-migrate: true   # phiên bản baseline = 1, không thực hiện bất kỳ thay đổi nào trong DB
     baseline-version: 0         # nó sẽ chạy V1__alter_some_tables.sql -> nghĩa là nó sẽ chạy cái version lớn hơn cái version hiện tại của chúng ta
 
-  #redis memory
+
   data:
+    #redis memory
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+
+    # elastic search
+#    elasticsearch:
+#      rest:
+#        uris: http://localhost:9200
+#        repositories:
+#          enabled: true
 
   # kafka
   kafka:

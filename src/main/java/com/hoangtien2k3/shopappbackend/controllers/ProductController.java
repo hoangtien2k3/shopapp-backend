@@ -20,6 +20,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -299,6 +300,17 @@ public class ProductController extends TranslateMessages {
             );
         }
     }
+
+    // Endpoint to search products by keyword
+//    @GetMapping("/search")
+//    public Page<ProductResponse> searchProducts(
+//            @RequestParam String keyword,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size
+//    ) {
+//        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+//        return productService.searchProducts(keyword, pageRequest);
+//    }
 
     // fack dữ liệu
     @PreAuthorize("hasRole('ROLE_ADMIN')")

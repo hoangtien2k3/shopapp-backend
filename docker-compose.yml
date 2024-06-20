@@ -32,6 +32,18 @@ services:
     networks:
       - shopapp-network
 
+  # elastic search
+  elasticsearch-container:
+    container_name: elasticsearch-container
+    image: elasticsearch:${ELASTICSEARCH_TAG}
+    ports:
+      - "${ELASTICSEARCH_PORT}:9200"
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+    networks:
+      - shopapp-network
+
   # neo4j
   neo4j-container:
     container_name: neo4j-container
@@ -171,3 +183,5 @@ networks:
 # docker-compose up -d zookeeper-03
 # docker-compose up -d kafka-broker-01
 # docker-compose up -d shopapp-spring-container
+
+

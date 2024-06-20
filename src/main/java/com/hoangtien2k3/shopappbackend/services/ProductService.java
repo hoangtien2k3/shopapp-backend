@@ -37,4 +37,7 @@ public interface ProductService {
     Product getDetailProducts(long productId) throws Exception;
 
     List<Product> findProductsByIds(List<Long> productIds);
+
+    // Elasticsearch
+//    Page<ProductResponse> searchProducts(String keyword, PageRequest pageRequest);
 }

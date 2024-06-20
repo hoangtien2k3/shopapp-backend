@@ -12,9 +12,9 @@ import com.hoangtien2k3.shopappbackend.models.ProductImage;
 import com.hoangtien2k3.shopappbackend.repositories.CategoryRepository;
 import com.hoangtien2k3.shopappbackend.repositories.ProductImageRepository;
 import com.hoangtien2k3.shopappbackend.repositories.ProductRepository;
+//import com.hoangtien2k3.shopappbackend.repositories.ProductSearchRepository;
 import com.hoangtien2k3.shopappbackend.responses.product.ProductResponse;
 import com.hoangtien2k3.shopappbackend.services.ProductService;
-import com.hoangtien2k3.shopappbackend.utils.LocalizationUtils;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,13 +29,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ProductServiceImpl extends TranslateMessages
-        implements ProductService {
+public class ProductServiceImpl extends TranslateMessages implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
     private final ProductMapper productMapper;
+//    private final ProductSearchRepository productSearchRepository;
 
     @Override
     @Transactional
@@ -150,5 +150,16 @@ public class ProductServiceImpl extends TranslateMessages
     public List<Product> findProductsByIds(List<Long> productIds) {
         return productRepository.findProductByIds(productIds);
     }
+
+//    @Override
+//    public Page<ProductResponse> searchProducts(String keyword, PageRequest pageRequest) {
+//        Pageable pageable = PageRequest.of(
+//                pageRequest.getPageNumber(),
+//                pageRequest.getPageSize(),
+//                Sort.by(Sort.Direction.ASC, "name")
+//        );
+//        Page<Product> productPage = productSearchRepository.findByNameContainingOrDescriptionContaining(keyword, keyword, pageable);
+//        return productPage.map(ProductResponse::fromProduct);
+//    }
 
 }

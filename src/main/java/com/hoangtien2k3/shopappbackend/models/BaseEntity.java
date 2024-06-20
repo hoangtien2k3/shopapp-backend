@@ -11,6 +11,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+/**
+ * @MappedSuperclass
+ * Chia sẻ thuộc tính: kế thừa các thuộc tính, phương thức, và ánh xạ từ lớp siêu lớp mà không cần định nghĩa lại.
+ * Không tạo bảng riêng: Lớp được chú thích với @MappedSuperclass sẽ không tạo ra một bảng trong cơ sở dữ liệu.
+ *                       Thay vào đó, các thuộc tính của nó sẽ được ánh xạ vào các bảng của các lớp con.
+ * */
 @MappedSuperclass
 public class BaseEntity {
     @JsonProperty("created_at")

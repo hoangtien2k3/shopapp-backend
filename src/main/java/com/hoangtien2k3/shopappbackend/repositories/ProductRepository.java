@@ -1,6 +1,7 @@
 package com.hoangtien2k3.shopappbackend.repositories;
 
 import com.hoangtien2k3.shopappbackend.models.Product;
+import com.hoangtien2k3.shopappbackend.utils.ConfixSql;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,18 +15,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findAll(Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE " +
-            "(:categoryId IS NULL OR :categoryId = 0 OR p.category.id = :categoryId) " +
-            "AND (:keyword IS NULL OR :keyword = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    @Query(ConfixSql.Product.SEARCH_PRODUCT_BY_KEYWORD)
     Page<Product> searchProducts(@Param("keyword") String keyword,
                                  @Param("categoryId") Long categoryId,
                                  Pageable pageable);
 
-    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.productImages where p.id = :productId")
+    @Query(ConfixSql.Product.GET_DETAIL_PRODUCT)
     Optional<Product> getDetailProducts(@Param("productId") Long productId);
 
-    @Query("SELECT p FROM Product p where p.id IN :productIds")
+    @Query(ConfixSql.Product.FIND_PRODUCT_BY_IDS)
     List<Product> findProductByIds(@Param("productIds") List<Long> productIds);
 
 }

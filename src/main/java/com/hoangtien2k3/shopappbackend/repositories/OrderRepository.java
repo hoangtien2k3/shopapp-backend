@@ -1,6 +1,7 @@
 package com.hoangtien2k3.shopappbackend.repositories;
 
 import com.hoangtien2k3.shopappbackend.models.Order;
+import com.hoangtien2k3.shopappbackend.utils.ConfixSql;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,9 +14,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserId(Long userId);
 
     // lẩy ra tất cả các order
-    @Query("SELECT o FROM Order o WHERE " +
-            "(:keyword IS NULL OR :keyword = '' OR o.fullName LIKE %:keyword% OR o.address LIKE %:keyword% " +
-            "OR o.note LIKE %:keyword%)"
-    )
+    @Query(ConfixSql.Order.GET_ALL_ORDER)
     Page<Order> findByKeyword(String keyword, Pageable pageable);
 }

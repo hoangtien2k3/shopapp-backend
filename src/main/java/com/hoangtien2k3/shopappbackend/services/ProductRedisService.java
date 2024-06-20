@@ -14,14 +14,12 @@ public interface ProductRedisService {
                                          Long categoryId,
                                          PageRequest pageRequest,
                                          String sortField,
-                                         String sortDirection
-    ) throws JsonProcessingException;
+                                         String sortDirection) throws JsonProcessingException;
 
     void saveAllProducts(List<ProductResponse> productResponses,
                          String keyword,
                          Long categoryId,
                          PageRequest pageRequest,
                          String sortField,
-                         String sortDirection
-    ) throws JsonProcessingException;
+                         String sortDirection) throws JsonProcessingException;
 }
