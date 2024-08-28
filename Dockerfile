@@ -1,5 +1,5 @@
 # Sử dụng hình ảnh Maven chính thức với OpenJDK 17 để build và chạy ứng dụng
-FROM openjdk:17
+FROM openjdk:17.0.2
 # Thiết lập thư mục làm việc trong container
 WORKDIR /app
 # Sao chép file pom.xml và thư mục .mvn vào thư mục làm việc của container
