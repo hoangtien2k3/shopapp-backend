@@ -1,17 +1,14 @@
 package com.hoangtien2k3.shopappbackend.controllers;
 
 import com.hoangtien2k3.shopappbackend.components.TranslateMessages;
-import com.hoangtien2k3.shopappbackend.components.converters.CategoryMessageConverter;
 import com.hoangtien2k3.shopappbackend.dtos.CategoryDTO;
 import com.hoangtien2k3.shopappbackend.models.Category;
 import com.hoangtien2k3.shopappbackend.responses.ApiResponse;
 import com.hoangtien2k3.shopappbackend.services.CategoryService;
-import com.hoangtien2k3.shopappbackend.utils.Const;
 import com.hoangtien2k3.shopappbackend.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -25,7 +22,6 @@ import java.util.List;
 public class CategoryController extends TranslateMessages {
 
     private final CategoryService categoryService;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("")
@@ -47,10 +43,6 @@ public class CategoryController extends TranslateMessages {
             }
             Category newCategory = categoryService.createCategory(categoryDTO);
 
-            // send kafka category
-            this.kafkaTemplate.send(Const.KAFKA_TOPIC_INSERT_CATEGORY, newCategory); // producer
-            this.kafkaTemplate.setMessageConverter(new CategoryMessageConverter());
-
             return ResponseEntity.ok(ApiResponse.builder().success(true)
                     .message(translate(MessageKeys.CREATE_CATEGORIES_SUCCESS))
                     .payload(newCategory)
@@ -67,7 +59,6 @@ public class CategoryController extends TranslateMessages {
     public ResponseEntity<ApiResponse<?>> getAllCategories() {
         List<Category> categories = categoryService.getAllCategories();
         /*kafka get all category*/
-        this.kafkaTemplate.send(Const.KAFKA_TOPIC_GET_ALL_CATEGORY, categories);
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
                 .payload(categories)

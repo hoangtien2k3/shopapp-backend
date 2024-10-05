@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8088
 
 spring:
   application:
@@ -8,7 +8,7 @@ spring:
   #config mysql8
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/shopapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: ${MYSQL_ROOT_USERNAME:root}
     password: ${MYSQL_ROOT_PASSWORD:12042003}
     jpa:
@@ -39,30 +39,11 @@ spring:
     baseline-on-migrate: true   # phiên bản baseline = 1, không thực hiện bất kỳ thay đổi nào trong DB
     baseline-version: 0         # nó sẽ chạy V1__alter_some_tables.sql -> nghĩa là nó sẽ chạy cái version lớn hơn cái version hiện tại của chúng ta
 
-
   data:
     #redis memory
     redis:
       host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-
-    # elastic search
-#    elasticsearch:
-#      rest:
-#        uris: http://localhost:9200
-#        repositories:
-#          enabled: true
-
-  # kafka
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        "[spring.json.type.mapping]": "category:com.hoangtien2k3.shopappbackend.models.Category"
-    consumer:
-      group-id: groupA
-      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      port: ${REDIS_PORT:6380}
 
 api:
   prefix: /api/v1
